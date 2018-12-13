@@ -4,7 +4,6 @@ from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import JointState
 from ias_robot_msgs.msg import GoToGoal, State, GoToAction
 import actionlib
-import time
 import numpy as np
 
 
@@ -97,10 +96,3 @@ class Darias:
 
         self._handle_goto_service.send_goal(joint_goal)
 
-
-arm = Darias()
-time.sleep(1)
-goal = np.random.standard_normal(6)
-print(goal)
-arm.go_to_joint(goal*0., 10., True)
-time.sleep(10.)
