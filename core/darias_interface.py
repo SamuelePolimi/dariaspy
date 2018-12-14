@@ -10,13 +10,17 @@ import numpy as np
 class RosListener:
 
     def __init__(self):
-        pass
+        self.ready = False
+
+    def _internal_callback(self, data):
+        self._callback(data)
+        self.ready = True
 
     def _callback(self, data):
         raise NotImplementedError()
 
     def get_callback(self):
-        return lambda x: self._callback(x)
+        return lambda x: self._internal_callback(x)
 
 
 class GeometricPoint(RosListener):
@@ -40,21 +44,31 @@ class GeometricPoint(RosListener):
         ])
 
 
-class Joint(RosListener):
+class Joint:
+
+    def __init__(self, position, velocity):
+        self.position = position
+        self.velocity = velocity
+
+
+class Arms(RosListener):
 
     def __init__(self):
         RosListener.__init__(self)
         rospy.Subscriber('/darias_control/darias/joint_state', JointState,
                          self.get_callback())
-        self.name = None
-        self.position = None
-        self.velocity = None
+        self.right = Joint(None, None)
+        self.left = Joint(None, None)
+        self.order = None
 
     def _callback(self, data):
-        if self.name is None:
-            self.name = data.name
-        self.position = np.array(data.position)
-        self.velocity = np.array(data.velocity)
+
+        if self.order is None:
+            self.order = data.name[15:22] + data.name[:15] + data.name[27:44] + data.name[22:37]
+        self.right.position = np.concatenate([data.position[15:22], data.position[:15]], axis=0)
+        self.left.position = np.concatenate([data.position[37:44], data.position[22:37]], axis=0)
+        self.right.velocity = np.concatenate([data.velocity[15:22], data.velocity[:15]], axis=0)
+        self.left.velocity = np.concatenate([data.velocity[37:44], data.velocity[22:37]], axis=0)
 
 
 class EndEffector(GeometricPoint):
@@ -75,13 +89,16 @@ class Darias:
         #########################################
         self.left_end_effector = EndEffector(True)
         self.right_end_effector = EndEffector(False)
-        self.joint = Joint()
+        self.joint = Arms()
 
         #########################################
         # Action
         #########################################
         self._handle_goto_service = actionlib.SimpleActionClient('/darias_control/darias/goto', GoToAction)
         self._handle_goto_service.wait_for_server()
+
+        while not(self.joint.ready and self.left_end_effector.ready and self.right_end_effector.ready):
+            pass
 
     def go_to_joint(self, q_des, duration, left=False):
         # Construct the Command Message:
