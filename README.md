@@ -25,5 +25,11 @@ Goals
 -----
 
 - [x] Initialize the library
-- [ ] GoTo with 3D coordinates
+- [x] Perceive cartisian and joint current positions
+- [x] GoTo with joint coordinates
+- [x] GoTo with 3D coordinates
+- [x] Wait GoTo for finish
+- [x] Definition of Trajectory
+- [x] Robot mode
+- [ ] Record Trajectory 
 - [ ] Include Optitrack

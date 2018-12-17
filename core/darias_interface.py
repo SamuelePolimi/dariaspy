@@ -3,8 +3,14 @@ import rospy
 from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import JointState
 from ias_robot_msgs.msg import GoToGoal, State, GoToAction
+from ias_robot_msgs.srv import SettingsUpdate, SettingsUpdateRequest
 import actionlib
 import numpy as np
+
+from darias_space import Trajectory, CartTrajectoryType, JointTrajectoryType
+
+DariasCommandMode = 3
+DariasKinestheticMode = 4
 
 
 class RosListener:
@@ -42,6 +48,24 @@ class GeometricPoint(RosListener):
             data.transform.rotation.y,
             data.transform.rotation.z
         ])
+
+
+class DariasMode:
+
+    def __init__(self):
+        self.settings_service = rospy.ServiceProxy('/darias_control/darias/settings', SettingsUpdate)
+        self.set_mode(3)
+
+    def set_mode(self, mode):
+        settings_request = SettingsUpdateRequest()
+        settings_request.mask = settings_request.MODE
+        settings_request.settings.mode = mode
+        try:
+            settings_response = self.settings_service(settings_request)
+        except rospy.ServiceException as exc:
+            print("Settings Service error: " + str(exc))
+            return
+        self.mode = mode
 
 
 class Joint:
@@ -89,7 +113,8 @@ class Darias:
         #########################################
         self.left_end_effector = EndEffector(True)
         self.right_end_effector = EndEffector(False)
-        self.joint = Arms()
+        self.arms = Arms()
+        self.mode = DariasMode()
 
         #########################################
         # Action
@@ -97,19 +122,43 @@ class Darias:
         self._handle_goto_service = actionlib.SimpleActionClient('/darias_control/darias/goto', GoToAction)
         self._handle_goto_service.wait_for_server()
 
-        while not(self.joint.ready and self.left_end_effector.ready and self.right_end_effector.ready):
+        while not(self.arms.ready and self.left_end_effector.ready and self.right_end_effector.ready):
             pass
 
-    def go_to_joint(self, q_des, duration, left=False):
+    def go_to(self, trajectory, left=False, wait=True):
+        """
+
+        :param trajectory: trajectory to follow
+        :type trajectory: Trajectory
+        :param left: left or right arms
+        :type left: bool
+        :param wait: wait for the trajectory to be done
+        :type wait: bool
+        :return:
+        """
+        self.mode.set_mode(3)
+
         # Construct the Command Message:
         joint_goal = GoToGoal()
-        joint_goal.type = joint_goal.JOINT
+        trajectory_type = trajectory.get_type()
+        if trajectory_type == CartTrajectoryType:
+            joint_goal.type = joint_goal.CART
+        elif trajectory_type == JointTrajectoryType:
+            joint_goal.type = joint_goal.JOINT
+        else:
+            raise Exception("The trajectory cannot contain goal of different typology (MixedTrajectoryType)")
+
         joint_goal.group = "%s_ARM" % ("LEFT" if left else "RIGHT")
 
-        joint_state = State()
-        joint_state.duration = duration
-        joint_state.destination = q_des.tolist()
-        joint_goal.states.append(joint_state)
+        for goal in trajectory.goal_list:
+            joint_state = State()
+            joint_state.duration = goal.duration
+            joint_state.destination = goal.position.tolist()
+            joint_goal.states.append(joint_state)
 
         self._handle_goto_service.send_goal(joint_goal)
+        if wait:
+            self._handle_goto_service.wait_for_result()
+
+
 
