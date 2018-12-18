@@ -31,5 +31,5 @@ Goals
 - [x] Wait GoTo for finish
 - [x] Definition of Trajectory
 - [x] Robot mode
-- [ ] Record Trajectory 
+- [x] Record Trajectory 
 - [ ] Include Optitrack

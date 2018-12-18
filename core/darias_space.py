@@ -49,6 +49,12 @@ class Trajectory:
         self.goal_list = goal_list
 
     def from_list_of_array(self, loa):
+        """
+        Given a list of arrays, it recovers the trajectory.
+        :param loa: list of goals
+        :type loa: list
+        :return:
+        """
         self.goal_list = []
         for array in loa:
             if array.shape[0] == CartGoalDimensions + 1:
@@ -63,18 +69,36 @@ class Trajectory:
                 raise Exception("Array of length %d not supported" % array.shape[0])
 
     def to_list_of_array(self):
+        """
+        It returns a list of arrays, decoded from the current trajectory.
+        :return:
+        """
         loa = []
         for goal in self.goal_list:
             loa.append(goal.to_array())
         return loa
 
     def from_np_file(self, filename):
+        """
+        Recover the trajectory from file
+        :param filename:
+        :return:
+        """
         self.from_list_of_array(np.load(filename))
 
     def to_np_file(self, filename):
+        """
+        Save the trajectory on file
+        :param filename:
+        :return:
+        """
         np.save(filename, self.to_list_of_array())
 
     def get_type(self):
+        """
+        Get whether the trajectory is just described in Joint space or in Cartesian spaced, or it is mixed
+        :return: CartTrajectoryType | JointTrajectoryType | MixedTrajectoryType
+        """
         flag = True
         for goal in self.goal_list:
             if goal.dimensions != CartGoalDimensions:
