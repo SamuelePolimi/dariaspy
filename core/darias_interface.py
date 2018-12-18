@@ -3,7 +3,7 @@ import rospy
 from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import JointState
 from ias_robot_msgs.msg import GoToGoal, State, GoToAction
-from ias_robot_msgs.srv import SettingsUpdate, SettingsUpdateRequest
+from ias_robot_msgs.srv import SettingsUpdate, SettingsUpdateRequest, KinestheticRequest, Kinesthetic
 import actionlib
 import numpy as np
 
@@ -49,6 +49,10 @@ class GeometricPoint(RosListener):
             data.transform.rotation.z
         ])
 
+    @property
+    def position(self):
+        return np.concatenate([self.translation, self.rotation], axis=0)
+
 
 class DariasMode:
 
@@ -61,7 +65,7 @@ class DariasMode:
         settings_request.mask = settings_request.MODE
         settings_request.settings.mode = mode
         try:
-            settings_response = self.settings_service(settings_request)
+            self.settings_service(settings_request)
         except rospy.ServiceException as exc:
             print("Settings Service error: " + str(exc))
             return
@@ -125,7 +129,7 @@ class Darias:
         while not(self.arms.ready and self.left_end_effector.ready and self.right_end_effector.ready):
             pass
 
-    def go_to(self, trajectory, left=False, wait=True):
+    def go_to(self, trajectory, left=True, wait=True):
         """
 
         :param trajectory: trajectory to follow
@@ -160,5 +164,24 @@ class Darias:
         if wait:
             self._handle_goto_service.wait_for_result()
 
+    def kinesthetic(self, left=True):
 
+        self.mode.set_mode(DariasKinestheticMode)
+
+        rospy.wait_for_service('/darias_control/darias/kinesthetic')
+        kin_service = rospy.ServiceProxy('darias_control/darias/kinesthetic', Kinesthetic)
+        start_msg = KinestheticRequest()
+        start_msg.mirrored = False
+        if left:
+            start_msg.teached_group = 'LEFT_ARM'
+        else:
+            start_msg.teached_group = 'RIGHT_ARM'
+
+        #start_msg.controlled_group = 'LEFT_HAND'
+
+        try:
+            start_resp = kin_service(start_msg)
+        except rospy.ServiceException as exc:
+            print("Kinesthetic Service error: " + str(exc))
+            return
 

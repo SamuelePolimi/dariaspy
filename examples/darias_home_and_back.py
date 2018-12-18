@@ -5,10 +5,7 @@ from core.darias_space import Trajectory, JointGoal
 
 darias = Darias()
 
-while not darias.arms.ready:
-    pass
-
-old_left_joint =  darias.arms.left.position
+old_left_joint = darias.arms.left.position
 old_right_joint = darias.arms.right.position
 
 darias.go_to(Trajectory([JointGoal(Home_Left_Joints, 10.)]), left=True, wait=True)

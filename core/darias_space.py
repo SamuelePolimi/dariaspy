@@ -1,6 +1,6 @@
 import numpy as np
 
-CartGoalDimensions = 3
+CartGoalDimensions = 7
 JointGoalDimensions = 22
 
 CartTrajectoryType = 0
