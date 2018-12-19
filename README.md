@@ -4,7 +4,7 @@ DariasPy
 A python interface for Darias!
 
 With this library it is possible to perform simple robotic experiments with a minimal effort. 
-For a complete documentation look into [DariasPy Guide](documentation/index.html)
+For a complete documentation look into [DariasPy Guide](https://samuelepolimi.github.io/DariasPy-Doc/)
 For example, for running darias in its home position, it is sufficient to write:
 
 ```python
