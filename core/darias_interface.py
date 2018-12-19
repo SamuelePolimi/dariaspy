@@ -1,4 +1,14 @@
 #!/usr/bin/env python
+"""
+This module contains the interface for Darias.
+Darias is viewed as an object with a set of joints and two end-effectors.
+
+The end-effector (left and right) expose their positions in 3D coordinates (with relative orientations).
+The joints can be divided in two logical groups (left and right), and they expose the angle in radiants.
+In future the joints will be divided in four groups (left-arm; left-hand; right-arm; right-hand).
+
+Darias interfaces exposes also two methods, one for control and one for kinesthetic teaching.
+"""
 import rospy
 from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import JointState
@@ -6,11 +16,14 @@ from ias_robot_msgs.msg import GoToGoal, State, GoToAction
 from ias_robot_msgs.srv import SettingsUpdate, SettingsUpdateRequest, KinestheticRequest, Kinesthetic
 import actionlib
 import numpy as np
+from enum import Enum
+import enum
 
-from darias_space import Trajectory, CartTrajectoryType, JointTrajectoryType
+from darias_space import Trajectory, TrajectoryType
 
-DariasCommandMode = 3
-DariasKinestheticMode = 4
+class DariasMode:
+    DariasCommandMode = 3
+    DariasKinestheticMode = 4
 
 
 class RosListener:
@@ -54,13 +67,19 @@ class GeometricPoint(RosListener):
         return np.concatenate([self.translation, self.rotation], axis=0)
 
 
-class DariasMode:
+class DariasModeController:
 
     def __init__(self):
         self.settings_service = rospy.ServiceProxy('/darias_control/darias/settings', SettingsUpdate)
         self.set_mode(3)
 
     def set_mode(self, mode):
+        """
+
+        :param mode:
+        :type mode: DariasMode
+        :return:
+        """
         settings_request = SettingsUpdateRequest()
         settings_request.mask = settings_request.MODE
         settings_request.settings.mode = mode
@@ -118,7 +137,7 @@ class Darias:
         self.left_end_effector = EndEffector(True)
         self.right_end_effector = EndEffector(False)
         self.arms = Arms()
-        self.mode = DariasMode()
+        self.mode = DariasModeController()
 
         #########################################
         # Action
@@ -145,9 +164,9 @@ class Darias:
         # Construct the Command Message:
         joint_goal = GoToGoal()
         trajectory_type = trajectory.get_type()
-        if trajectory_type == CartTrajectoryType:
+        if trajectory_type == TrajectoryType.CartTrajectoryType:
             joint_goal.type = joint_goal.CART
-        elif trajectory_type == JointTrajectoryType:
+        elif trajectory_type == TrajectoryType.JointTrajectoryType:
             joint_goal.type = joint_goal.JOINT
         else:
             raise Exception("The trajectory cannot contain goal of different typology (MixedTrajectoryType)")
@@ -173,7 +192,7 @@ class Darias:
         :return:
         """
 
-        self.mode.set_mode(DariasKinestheticMode)
+        self.mode.set_mode(DariasMode.DariasKinestheticMode)
 
         rospy.wait_for_service('/darias_control/darias/kinesthetic')
         kin_service = rospy.ServiceProxy('darias_control/darias/kinesthetic', Kinesthetic)

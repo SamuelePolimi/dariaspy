@@ -1,14 +1,26 @@
+"""
+This module contains the definitions of goal (which are points in 3D or Joint space with a duration in time),
+and of trajectories which can be viewed as a set of goals.
+"""
 import numpy as np
+from enum import Enum
 
-CartGoalDimensions = 7
-JointGoalDimensions = 22
 
-CartTrajectoryType = 0
-JointTrajectoryType = 1
-MixedTrajectoryType = 2
+class GoalDimension(Enum):
+    CartGoalDimensions = 7
+    JointGoalDimensions = 22
+
+
+class TrajectoryType(Enum):
+    CartTrajectoryType = 0
+    JointTrajectoryType = 1
+    MixedTrajectoryType = 2
 
 
 class Goal:
+    """
+    This is the generic interface of a goal: a given position and the time needed to achieve it.
+    """
 
     def __init__(self, position, duration, dimensions=7):
         self.position = position if position is not None else np.zeros(dimensions)
@@ -21,6 +33,12 @@ class Goal:
         assert np.isscalar(self.duration), "Duration must be a scalar"
 
     def from_array(self, array):
+        """
+        Give a "well shaped" array, this method reconstruct a goal.
+        TODO> This might have more sense as a factory class
+        :param array:
+        :return:
+        """
         if array.shape[0] == self.dimensions + 1:
             self.position = array[:self.dimensions]
             self.duration = array[-1]
@@ -28,40 +46,59 @@ class Goal:
             raise Exception("Array dimension should be %d, since the first %d are reserved for the position and the last one for the duration" % (self.dimensions + 1, self.dimensions))
 
     def to_array(self):
+        """
+        Return a "well shaped" array representing the goal.
+        TODO> This might have more sense as a factory class
+        :return:
+        """
         return np.concatenate([self.position, [self.duration]], axis=0)
 
 
 class CartGoal(Goal):
+    """
+    Goal in the cartesian space.
+    """
 
     def __init__(self, position=None, duration=1):
-        Goal.__init__(self, position, duration, CartGoalDimensions)
+        Goal.__init__(self, position, duration, GoalDimension.CartGoalDimensions)
 
 
 class JointGoal(Goal):
+    """
+    Goal in the joint space
+    """
 
     def __init__(self, position=None, duration=1):
-        Goal.__init__(self, position, duration, JointGoalDimensions)
+        Goal.__init__(self, position, duration, GoalDimension.JointGoalDimensions)
 
 
 class Trajectory:
+    """
+    A trajectory is a ordered list of goals. You can combine goal in different spaces.
+    """
 
     def __init__(self, goal_list):
+        """
+        Create a trajectory from a list of goals.
+        :param goal_list: Ordered sequence of goal, provided as a list
+        :type goal_list: list
+        """
         self.goal_list = goal_list
 
     def from_list_of_array(self, loa):
         """
-        Given a list of arrays, it recovers the trajectory.
+        Given a list of "well shaped" arrays, it recovers the trajectory.
         :param loa: list of goals
         :type loa: list
         :return:
         """
         self.goal_list = []
         for array in loa:
-            if array.shape[0] == CartGoalDimensions + 1:
+            if array.shape[0] == GoalDimension.CartGoalDimensions + 1:
                 goal = CartGoal()
                 goal.from_array(array)
                 self.goal_list.append(goal)
-            elif array.shape[0] == JointGoalDimensions + 1:
+            elif array.shape[0] == GoalDimension.JointGoalDimensions + 1:
                 goal = JointGoal()
                 goal.from_array(array)
                 self.goal_list.append(goal)
@@ -70,7 +107,7 @@ class Trajectory:
 
     def to_list_of_array(self):
         """
-        It returns a list of arrays, decoded from the current trajectory.
+        It returns a list of "well shaped" arrays, decoded from the current trajectory.
         :return:
         """
         loa = []
@@ -81,7 +118,8 @@ class Trajectory:
     def from_np_file(self, filename):
         """
         Recover the trajectory from file
-        :param filename:
+        :param filename: Name of the file
+        :type filename: str
         :return:
         """
         self.from_list_of_array(np.load(filename))
@@ -89,7 +127,8 @@ class Trajectory:
     def to_np_file(self, filename):
         """
         Save the trajectory on file
-        :param filename:
+        :param filename: Name of the file
+        :type filename: str
         :return:
         """
         np.save(filename, self.to_list_of_array())
@@ -98,25 +137,26 @@ class Trajectory:
         """
         Get whether the trajectory is just described in Joint space or in Cartesian spaced, or it is mixed
         :return: CartTrajectoryType | JointTrajectoryType | MixedTrajectoryType
+        :rtype: TrajectoryType
         """
         flag = True
         for goal in self.goal_list:
-            if goal.dimensions != CartGoalDimensions:
+            if goal.dimensions != GoalDimension.CartGoalDimensions:
                 flag = False
                 break
 
         if flag:
-            return CartTrajectoryType
+            return TrajectoryType.CartTrajectoryType
 
         flag = True
         for goal in self.goal_list:
-            if goal.dimensions != JointGoalDimensions:
+            if goal.dimensions != GoalDimension.JointGoalDimensions:
                 flag = False
                 break
 
         if flag:
-            return JointTrajectoryType
+            return TrajectoryType.JointTrajectoryType
 
-        return MixedTrajectoryType
+        return TrajectoryType.MixedTrajectoryType
 
 

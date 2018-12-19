@@ -1,3 +1,9 @@
+"""
+Collection of useful position.
+At the current time we have only home-positions.
+When we will add more useful positions, then we will group them.
+"""
+
 import numpy as np
 
 Home_Left_Translation = np.array([ 0.53534646,  0.52054809, -0.20210099])
