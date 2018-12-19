@@ -16,12 +16,12 @@ from ias_robot_msgs.msg import GoToGoal, State, GoToAction
 from ias_robot_msgs.srv import SettingsUpdate, SettingsUpdateRequest, KinestheticRequest, Kinesthetic
 import actionlib
 import numpy as np
-from enum import Enum
-import enum
 
 from darias_space import Trajectory, TrajectoryType
 
+
 class DariasMode:
+
     DariasCommandMode = 3
     DariasKinestheticMode = 4
 
@@ -71,14 +71,19 @@ class DariasModeController:
 
     def __init__(self):
         self.settings_service = rospy.ServiceProxy('/darias_control/darias/settings', SettingsUpdate)
-        self.set_mode(3)
+        self.set_mode(DariasMode.DariasCommandMode)
 
     def set_mode(self, mode):
         """
+        It sets a different mode.
 
-        :param mode:
-        :type mode: DariasMode
-        :return:
+        :param mode: DariasMode.<mode>
+        :type mode: int
+
+        :Example:
+
+        >>> mode = DariasModeController()
+        >>> mode.set_mode(DariasMode.DariasCommandMode)
         """
         settings_request = SettingsUpdateRequest()
         settings_request.mask = settings_request.MODE
@@ -92,6 +97,9 @@ class DariasModeController:
 
 
 class Joint:
+    """
+    Defines a robotic joint.
+    """
 
     def __init__(self, position, velocity):
         self.position = position
@@ -99,6 +107,10 @@ class Joint:
 
 
 class Arms(RosListener):
+    """
+    Defines the robotics' arms.
+    We can access to the left arm or to the right one.
+    """
 
     def __init__(self):
         RosListener.__init__(self)
@@ -129,6 +141,9 @@ class EndEffector(GeometricPoint):
 class Darias:
 
     def __init__(self):
+        """
+        Instantiates an interface for darias.
+        """
         rospy.init_node("listener", anonymous=True)
 
         #########################################
@@ -151,13 +166,13 @@ class Darias:
     def go_to(self, trajectory, left=True, wait=True):
         """
         It performs a desired trajectory.
+
         :param trajectory: trajectory to follow
         :type trajectory: Trajectory
         :param left: left or right arms
         :type left: bool
         :param wait: wait for the trajectory to be done
         :type wait: bool
-        :return:
         """
         self.mode.set_mode(3)
 
@@ -187,9 +202,9 @@ class Darias:
         """
         This method provide the kinerthetic teaching (i.e., gravity compensation mode).
         In order to stop this service it is sufficient to call mode.set_mode(DariasCommandMode)
+
         :param left: left or right arm?
         :type left: bool
-        :return:
         """
 
         self.mode.set_mode(DariasMode.DariasKinestheticMode)

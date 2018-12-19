@@ -19,6 +19,7 @@ class Record:
 
     def __init__(self, robot, record_mode=RecordMode.CartRecordMode, left=True, sampling_frequency=10):
         """
+        Instantiating a recording object.
 
         :param robot: An instance of the robot we are interested in
         :type robot: Darias
@@ -28,6 +29,7 @@ class Record:
         :type left: bool
         :param sampling_frequency: How many time do we sample in one second
         :type sampling_frequency: int
+
         """
         self.robot = robot
         self.left = left
@@ -39,9 +41,10 @@ class Record:
     def record_fixed_duration(self, duration=10.):
         """
         Record a trajectory of fixed time-length.
+
         :param duration: Duration of the trajectory expressed in seconds.
         :type duration: float
-        :return:
+
         """
 
         self.robot.mode.set_mode(DariasMode.DariasKinestheticMode)
@@ -65,12 +68,10 @@ class Record:
     def conditional_record(self, callback_start, callback_end, max_duration=60.):
         """
         This is a conditional recording. the recording will start as soon as callback_start will return true.
-        :param callback_start: Function which receives a goal as input, and produce a decision. When the decision is true,
-        then the recording starts
-        :param callback_end: Function which receives a goal as input, and produce a decision.
-        When the decision is true, then the record will stop, and this method will return.
+
+        :param callback_start: Function which receives a goal as input, and produce a decision. When the decision is true, then the recording starts
+        :param callback_end: Function which receives a goal as input, and produce a decision. When the decision is true, then the record will stop, and this method will return.
         :param max_duration: the overall process cannot exceed the max_duration, expressed in seconds.
-        :return:
         """
         duration = 0.
         self.robot.mode.set_mode(DariasMode.DariasKinestheticMode)
@@ -97,11 +98,13 @@ class RecordingCallback:
 
     def __call__(self, goal):
         """
-        Make a decision based on the current goal
+        Make a decision based on the current goal.
+
         :param goal: current goal
         :type goal: Goal
         :return: true if we want to activate the event (e.g., ending the recording or starting it)
         :rtype: bool
+
         """
 
 
@@ -114,6 +117,7 @@ class WaitingToStart(RecordingCallback):
         """
         This creates a callback for conditional_recording. The recording will start only when the mean velocity of each
         joint or position is greater then the threshold.
+
         :param threshold: minimum mean velocity for the recording to start
         :type threshold: float
         :param verbose: prompt on the console the activation of the recording
@@ -126,7 +130,8 @@ class WaitingToStart(RecordingCallback):
 
     def __call__(self, goal):
         """
-        If the velocity exceed a certain treshold, than the record start
+        If the velocity exceed a certain treshold, than the record start.
+
         :param goal:
         :type goal: Goal
         :return: Start the recording if true
@@ -150,6 +155,7 @@ class WaitingToEnd(RecordingCallback):
 
     def __init__(self, threshold=0.01, duration=1., verbose=True):
         """
+        Instantiate a "waiting to end" callback for stopping the recording.
 
         :param threshold: max velocity in order to consider the arm not moving
         :param duration: resting time in seconds
@@ -164,6 +170,7 @@ class WaitingToEnd(RecordingCallback):
     def __call__(self, goal):
         """
         Deactivates the recording when the velocities are below a certain threshold.
+
         :param goal:
         :type goal: Goal
         :return:
