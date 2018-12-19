@@ -131,7 +131,7 @@ class Darias:
 
     def go_to(self, trajectory, left=True, wait=True):
         """
-
+        It performs a desired trajectory.
         :param trajectory: trajectory to follow
         :type trajectory: Trajectory
         :param left: left or right arms
@@ -165,6 +165,13 @@ class Darias:
             self._handle_goto_service.wait_for_result()
 
     def kinesthetic(self, left=True):
+        """
+        This method provide the kinerthetic teaching (i.e., gravity compensation mode).
+        In order to stop this service it is sufficient to call mode.set_mode(DariasCommandMode)
+        :param left: left or right arm?
+        :type left: bool
+        :return:
+        """
 
         self.mode.set_mode(DariasKinestheticMode)
 
@@ -177,10 +184,8 @@ class Darias:
         else:
             start_msg.teached_group = 'RIGHT_ARM'
 
-        #start_msg.controlled_group = 'LEFT_HAND'
-
         try:
-            start_resp = kin_service(start_msg)
+            kin_service(start_msg)
         except rospy.ServiceException as exc:
             print("Kinesthetic Service error: " + str(exc))
             return
