@@ -1,0 +1,266 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>core.utils &#8212; DariasPy 1.0.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DariasPy 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for core.utils</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="k">import</span> <span class="n">Enum</span>
+
+<span class="kn">from</span> <span class="nn">darias_interface</span> <span class="k">import</span> <span class="n">Darias</span><span class="p">,</span> <span class="n">DariasMode</span>
+<span class="kn">from</span> <span class="nn">darias_space</span> <span class="k">import</span> <span class="n">Trajectory</span><span class="p">,</span> <span class="n">JointGoal</span><span class="p">,</span> <span class="n">CartGoal</span><span class="p">,</span> <span class="n">Goal</span>
+
+
+<div class="viewcode-block" id="RecordMode"><a class="viewcode-back" href="../../core.html#core.utils.RecordMode">[docs]</a><span class="k">class</span> <span class="nc">RecordMode</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">CartRecordMode</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">JointRecordMode</span> <span class="o">=</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="Record"><a class="viewcode-back" href="../../core.html#core.utils.Record">[docs]</a><span class="k">class</span> <span class="nc">Record</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class provides an utility for recording trajectories. It fixes the robot in teaching mode and then it records</span>
+<span class="sd">    the trajectory.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">robot</span><span class="p">,</span> <span class="n">record_mode</span><span class="o">=</span><span class="n">RecordMode</span><span class="o">.</span><span class="n">CartRecordMode</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sampling_frequency</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param robot: An instance of the robot we are interested in</span>
+<span class="sd">        :type robot: Darias</span>
+<span class="sd">        :param record_mode: In which mode we would like to record</span>
+<span class="sd">        :type record_mode: RecordMode</span>
+<span class="sd">        :param left: do we use the left arm?</span>
+<span class="sd">        :type left: bool</span>
+<span class="sd">        :param sampling_frequency: How many time do we sample in one second</span>
+<span class="sd">        :type sampling_frequency: int</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span> <span class="o">=</span> <span class="n">robot</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">left</span> <span class="o">=</span> <span class="n">left</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="n">record_mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span> <span class="o">=</span> <span class="n">Trajectory</span><span class="p">([])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampling_frequency</span> <span class="o">=</span> <span class="n">sampling_frequency</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dt</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">sampling_frequency</span>
+
+<div class="viewcode-block" id="Record.record_fixed_duration"><a class="viewcode-back" href="../../core.html#core.utils.Record.record_fixed_duration">[docs]</a>    <span class="k">def</span> <span class="nf">record_fixed_duration</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">10.</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Record a trajectory of fixed time-length.</span>
+<span class="sd">        :param duration: Duration of the trajectory expressed in seconds.</span>
+<span class="sd">        :type duration: float</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">set_mode</span><span class="p">(</span><span class="n">DariasMode</span><span class="o">.</span><span class="n">DariasKinestheticMode</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">duration</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_frequency</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">goal_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_record_goal</span><span class="p">())</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_record_goal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">RecordMode</span><span class="o">.</span><span class="n">JointRecordMode</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">JointGoal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">arms</span><span class="o">.</span><span class="n">left</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">JointGoal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">arms</span><span class="o">.</span><span class="n">right</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode</span> <span class="o">==</span> <span class="n">RecordMode</span><span class="o">.</span><span class="n">CartRecordMode</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">left</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">CartGoal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">left_end_effector</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">CartGoal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">right_end_effector</span><span class="o">.</span><span class="n">position</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Record.conditional_record"><a class="viewcode-back" href="../../core.html#core.utils.Record.conditional_record">[docs]</a>    <span class="k">def</span> <span class="nf">conditional_record</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callback_start</span><span class="p">,</span> <span class="n">callback_end</span><span class="p">,</span> <span class="n">max_duration</span><span class="o">=</span><span class="mf">60.</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is a conditional recording. the recording will start as soon as callback_start will return true.</span>
+<span class="sd">        :param callback_start: Function which receives a goal as input, and produce a decision. When the decision is true,</span>
+<span class="sd">        then the recording starts</span>
+<span class="sd">        :param callback_end: Function which receives a goal as input, and produce a decision.</span>
+<span class="sd">        When the decision is true, then the record will stop, and this method will return.</span>
+<span class="sd">        :param max_duration: the overall process cannot exceed the max_duration, expressed in seconds.</span>
+<span class="sd">        :return:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">robot</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">set_mode</span><span class="p">(</span><span class="n">DariasMode</span><span class="o">.</span><span class="n">DariasKinestheticMode</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">callback_start</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_record_goal</span><span class="p">())</span> <span class="ow">and</span> <span class="n">duration</span> <span class="o">&lt;</span> <span class="n">max_duration</span><span class="p">:</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
+            <span class="n">duration</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+
+        <span class="n">goal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_record_goal</span><span class="p">()</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">callback_end</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span> <span class="ow">and</span> <span class="n">duration</span> <span class="o">&lt;</span> <span class="n">max_duration</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">trajectory</span><span class="o">.</span><span class="n">goal_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span>
+            <span class="n">goal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_record_goal</span><span class="p">()</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dt</span><span class="p">)</span>
+            <span class="n">duration</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dt</span>
+
+        <span class="k">if</span> <span class="n">duration</span> <span class="o">&gt;=</span> <span class="n">max_duration</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Max duration reached&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="RecordingCallback"><a class="viewcode-back" href="../../core.html#core.utils.RecordingCallback">[docs]</a><span class="k">class</span> <span class="nc">RecordingCallback</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">goal</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Make a decision based on the current goal</span>
+<span class="sd">        :param goal: current goal</span>
+<span class="sd">        :type goal: Goal</span>
+<span class="sd">        :return: true if we want to activate the event (e.g., ending the recording or starting it)</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="WaitingToStart"><a class="viewcode-back" href="../../core.html#core.utils.WaitingToStart">[docs]</a><span class="k">class</span> <span class="nc">WaitingToStart</span><span class="p">(</span><span class="n">RecordingCallback</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Simple starting callback for the conditional start of the recording.</span>
+<span class="sd">    It activates the recording when the velocities of the joints exceed a certain threshold.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This creates a callback for conditional_recording. The recording will start only when the mean velocity of each</span>
+<span class="sd">        joint or position is greater then the threshold.</span>
+<span class="sd">        :param threshold: minimum mean velocity for the recording to start</span>
+<span class="sd">        :type threshold: float</span>
+<span class="sd">        :param verbose: prompt on the console the activation of the recording</span>
+<span class="sd">        :type verbose: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">RecordingCallback</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="n">threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_position</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">goal</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        If the velocity exceed a certain treshold, than the record start</span>
+<span class="sd">        :param goal:</span>
+<span class="sd">        :type goal: Goal</span>
+<span class="sd">        :return: Start the recording if true</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_position</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_position</span> <span class="o">=</span> <span class="n">goal</span><span class="o">.</span><span class="n">position</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_position</span> <span class="o">-</span> <span class="n">goal</span><span class="o">.</span><span class="n">position</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">/</span><span class="n">goal</span><span class="o">.</span><span class="n">duration</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">current_position</span> <span class="o">-</span> <span class="n">goal</span><span class="o">.</span><span class="n">position</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">/</span><span class="n">goal</span><span class="o">.</span><span class="n">duration</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_position</span> <span class="o">=</span> <span class="n">goal</span><span class="o">.</span><span class="n">position</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Recording started </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="WaitingToEnd"><a class="viewcode-back" href="../../core.html#core.utils.WaitingToEnd">[docs]</a><span class="k">class</span> <span class="nc">WaitingToEnd</span><span class="p">(</span><span class="n">RecordingCallback</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stop the recording when the velocities are lower than a specific threshold for a given resting-duration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">        :param threshold: max velocity in order to consider the arm not moving</span>
+<span class="sd">        :param duration: resting time in seconds</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">RecordingCallback</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span> <span class="o">=</span> <span class="n">threshold</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_position</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_duration</span> <span class="o">=</span> <span class="n">duration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+
+    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">goal</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Deactivates the recording when the velocities are below a certain threshold.</span>
+<span class="sd">        :param goal:</span>
+<span class="sd">        :type goal: Goal</span>
+<span class="sd">        :return:</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_position</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_position</span> <span class="o">=</span> <span class="n">goal</span><span class="o">.</span><span class="n">position</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_position</span> <span class="o">-</span> <span class="n">goal</span><span class="o">.</span><span class="n">position</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">/</span><span class="n">goal</span><span class="o">.</span><span class="n">duration</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">threshold</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_position</span> <span class="o">=</span> <span class="n">goal</span><span class="o">.</span><span class="n">position</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">+=</span> <span class="n">goal</span><span class="o">.</span><span class="n">duration</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_duration</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Recording stopped </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_position</span> <span class="o">=</span> <span class="n">goal</span><span class="o">.</span><span class="n">position</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="mf">0.</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">DariasPy 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Tosatto Samuele.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+    </div>
+  </body>
+</html>

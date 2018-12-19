@@ -1,0 +1,8 @@
+DariasPy
+========
+
+.. toctree::
+   :maxdepth: 4
+
+   core
+   examples

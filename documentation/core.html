@@ -1,0 +1,433 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>core package &#8212; DariasPy 1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="examples package" href="examples.html" />
+    <link rel="prev" title="DariasPy" href="modules.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="examples package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="DariasPy"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DariasPy 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" accesskey="U">DariasPy</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="core-package">
+<h1>core package<a class="headerlink" href="#core-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-core.darias_interface">
+<span id="core-darias-interface-module"></span><h2>core.darias_interface module<a class="headerlink" href="#module-core.darias_interface" title="Permalink to this headline">¶</a></h2>
+<p>This module contains the interface for Darias.
+Darias is viewed as an object with a set of joints and two end-effectors.</p>
+<p>The end-effector (left and right) expose their positions in 3D coordinates (with relative orientations).
+The joints can be divided in two logical groups (left and right), and they expose the angle in radiants.
+In future the joints will be divided in four groups (left-arm; left-hand; right-arm; right-hand).</p>
+<p>Darias interfaces exposes also two methods, one for control and one for kinesthetic teaching.</p>
+<dl class="class">
+<dt id="core.darias_interface.Arms">
+<em class="property">class </em><code class="descclassname">core.darias_interface.</code><code class="descname">Arms</code><a class="reference internal" href="_modules/core/darias_interface.html#Arms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.Arms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.darias_interface.RosListener" title="core.darias_interface.RosListener"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.darias_interface.RosListener</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="core.darias_interface.Darias">
+<em class="property">class </em><code class="descclassname">core.darias_interface.</code><code class="descname">Darias</code><a class="reference internal" href="_modules/core/darias_interface.html#Darias"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.Darias" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="core.darias_interface.Darias.go_to">
+<code class="descname">go_to</code><span class="sig-paren">(</span><em>trajectory</em>, <em>left=True</em>, <em>wait=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_interface.html#Darias.go_to"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.Darias.go_to" title="Permalink to this definition">¶</a></dt>
+<dd><p>It performs a desired trajectory.
+:param trajectory: trajectory to follow
+:type trajectory: Trajectory
+:param left: left or right arms
+:type left: bool
+:param wait: wait for the trajectory to be done
+:type wait: bool
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.darias_interface.Darias.kinesthetic">
+<code class="descname">kinesthetic</code><span class="sig-paren">(</span><em>left=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_interface.html#Darias.kinesthetic"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.Darias.kinesthetic" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method provide the kinerthetic teaching (i.e., gravity compensation mode).
+In order to stop this service it is sufficient to call mode.set_mode(DariasCommandMode)
+:param left: left or right arm?
+:type left: bool
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.darias_interface.DariasMode">
+<em class="property">class </em><code class="descclassname">core.darias_interface.</code><code class="descname">DariasMode</code><a class="reference internal" href="_modules/core/darias_interface.html#DariasMode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.DariasMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="attribute">
+<dt id="core.darias_interface.DariasMode.DariasCommandMode">
+<code class="descname">DariasCommandMode</code><em class="property"> = 3</em><a class="headerlink" href="#core.darias_interface.DariasMode.DariasCommandMode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.darias_interface.DariasMode.DariasKinestheticMode">
+<code class="descname">DariasKinestheticMode</code><em class="property"> = 4</em><a class="headerlink" href="#core.darias_interface.DariasMode.DariasKinestheticMode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.darias_interface.DariasModeController">
+<em class="property">class </em><code class="descclassname">core.darias_interface.</code><code class="descname">DariasModeController</code><a class="reference internal" href="_modules/core/darias_interface.html#DariasModeController"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.DariasModeController" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="core.darias_interface.DariasModeController.set_mode">
+<code class="descname">set_mode</code><span class="sig-paren">(</span><em>mode</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_interface.html#DariasModeController.set_mode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.DariasModeController.set_mode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.darias_interface.EndEffector">
+<em class="property">class </em><code class="descclassname">core.darias_interface.</code><code class="descname">EndEffector</code><span class="sig-paren">(</span><em>left=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_interface.html#EndEffector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.EndEffector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.darias_interface.GeometricPoint" title="core.darias_interface.GeometricPoint"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.darias_interface.GeometricPoint</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="core.darias_interface.GeometricPoint">
+<em class="property">class </em><code class="descclassname">core.darias_interface.</code><code class="descname">GeometricPoint</code><a class="reference internal" href="_modules/core/darias_interface.html#GeometricPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.GeometricPoint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.darias_interface.RosListener" title="core.darias_interface.RosListener"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.darias_interface.RosListener</span></code></a></p>
+<dl class="attribute">
+<dt id="core.darias_interface.GeometricPoint.position">
+<code class="descname">position</code><a class="headerlink" href="#core.darias_interface.GeometricPoint.position" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.darias_interface.Joint">
+<em class="property">class </em><code class="descclassname">core.darias_interface.</code><code class="descname">Joint</code><span class="sig-paren">(</span><em>position</em>, <em>velocity</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_interface.html#Joint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.Joint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="core.darias_interface.RosListener">
+<em class="property">class </em><code class="descclassname">core.darias_interface.</code><code class="descname">RosListener</code><a class="reference internal" href="_modules/core/darias_interface.html#RosListener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.RosListener" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="core.darias_interface.RosListener.get_callback">
+<code class="descname">get_callback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_interface.html#RosListener.get_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.RosListener.get_callback" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.darias_space">
+<span id="core-darias-space-module"></span><h2>core.darias_space module<a class="headerlink" href="#module-core.darias_space" title="Permalink to this headline">¶</a></h2>
+<p>This module contains the definitions of goal (which are points in 3D or Joint space with a duration in time),
+and of trajectories which can be viewed as a set of goals.</p>
+<dl class="class">
+<dt id="core.darias_space.CartGoal">
+<em class="property">class </em><code class="descclassname">core.darias_space.</code><code class="descname">CartGoal</code><span class="sig-paren">(</span><em>position=None</em>, <em>duration=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_space.html#CartGoal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_space.CartGoal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.darias_space.Goal" title="core.darias_space.Goal"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.darias_space.Goal</span></code></a></p>
+<p>Goal in the cartesian space.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="core.darias_space.Goal">
+<em class="property">class </em><code class="descclassname">core.darias_space.</code><code class="descname">Goal</code><span class="sig-paren">(</span><em>position</em>, <em>duration</em>, <em>dimensions=7</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_space.html#Goal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_space.Goal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This is the generic interface of a goal: a given position and the time needed to achieve it.</p>
+<dl class="method">
+<dt id="core.darias_space.Goal.from_array">
+<code class="descname">from_array</code><span class="sig-paren">(</span><em>array</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_space.html#Goal.from_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_space.Goal.from_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Give a “well shaped” array, this method reconstruct a goal.
+TODO&gt; This might have more sense as a factory class
+:param array:
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.darias_space.Goal.to_array">
+<code class="descname">to_array</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_space.html#Goal.to_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_space.Goal.to_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a “well shaped” array representing the goal.
+TODO&gt; This might have more sense as a factory class
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.darias_space.GoalDimension">
+<em class="property">class </em><code class="descclassname">core.darias_space.</code><code class="descname">GoalDimension</code><a class="reference internal" href="_modules/core/darias_space.html#GoalDimension"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_space.GoalDimension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="attribute">
+<dt id="core.darias_space.GoalDimension.CartGoalDimensions">
+<code class="descname">CartGoalDimensions</code><em class="property"> = 7</em><a class="headerlink" href="#core.darias_space.GoalDimension.CartGoalDimensions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.darias_space.GoalDimension.JointGoalDimensions">
+<code class="descname">JointGoalDimensions</code><em class="property"> = 22</em><a class="headerlink" href="#core.darias_space.GoalDimension.JointGoalDimensions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.darias_space.JointGoal">
+<em class="property">class </em><code class="descclassname">core.darias_space.</code><code class="descname">JointGoal</code><span class="sig-paren">(</span><em>position=None</em>, <em>duration=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_space.html#JointGoal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_space.JointGoal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.darias_space.Goal" title="core.darias_space.Goal"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.darias_space.Goal</span></code></a></p>
+<p>Goal in the joint space</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="core.darias_space.Trajectory">
+<em class="property">class </em><code class="descclassname">core.darias_space.</code><code class="descname">Trajectory</code><span class="sig-paren">(</span><em>goal_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_space.html#Trajectory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_space.Trajectory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A trajectory is a ordered list of goals. You can combine goal in different spaces.</p>
+<dl class="method">
+<dt id="core.darias_space.Trajectory.from_list_of_array">
+<code class="descname">from_list_of_array</code><span class="sig-paren">(</span><em>loa</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_space.html#Trajectory.from_list_of_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_space.Trajectory.from_list_of_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a list of “well shaped” arrays, it recovers the trajectory.
+:param loa: list of goals
+:type loa: list
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.darias_space.Trajectory.from_np_file">
+<code class="descname">from_np_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_space.html#Trajectory.from_np_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_space.Trajectory.from_np_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Recover the trajectory from file
+:param filename: Name of the file
+:type filename: str
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.darias_space.Trajectory.get_type">
+<code class="descname">get_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_space.html#Trajectory.get_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_space.Trajectory.get_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get whether the trajectory is just described in Joint space or in Cartesian spaced, or it is mixed
+:return: CartTrajectoryType | JointTrajectoryType | MixedTrajectoryType
+:rtype: TrajectoryType</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.darias_space.Trajectory.to_list_of_array">
+<code class="descname">to_list_of_array</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_space.html#Trajectory.to_list_of_array"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_space.Trajectory.to_list_of_array" title="Permalink to this definition">¶</a></dt>
+<dd><p>It returns a list of “well shaped” arrays, decoded from the current trajectory.
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.darias_space.Trajectory.to_np_file">
+<code class="descname">to_np_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_space.html#Trajectory.to_np_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_space.Trajectory.to_np_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the trajectory on file
+:param filename: Name of the file
+:type filename: str
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.darias_space.TrajectoryType">
+<em class="property">class </em><code class="descclassname">core.darias_space.</code><code class="descname">TrajectoryType</code><a class="reference internal" href="_modules/core/darias_space.html#TrajectoryType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_space.TrajectoryType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="attribute">
+<dt id="core.darias_space.TrajectoryType.CartTrajectoryType">
+<code class="descname">CartTrajectoryType</code><em class="property"> = 0</em><a class="headerlink" href="#core.darias_space.TrajectoryType.CartTrajectoryType" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.darias_space.TrajectoryType.JointTrajectoryType">
+<code class="descname">JointTrajectoryType</code><em class="property"> = 1</em><a class="headerlink" href="#core.darias_space.TrajectoryType.JointTrajectoryType" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.darias_space.TrajectoryType.MixedTrajectoryType">
+<code class="descname">MixedTrajectoryType</code><em class="property"> = 2</em><a class="headerlink" href="#core.darias_space.TrajectoryType.MixedTrajectoryType" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-core.positions">
+<span id="core-positions-module"></span><h2>core.positions module<a class="headerlink" href="#module-core.positions" title="Permalink to this headline">¶</a></h2>
+<p>Collection of useful position.
+At the current time we have only home-positions.
+When we will add more useful positions, then we will group them.</p>
+</div>
+<div class="section" id="module-core.utils">
+<span id="core-utils-module"></span><h2>core.utils module<a class="headerlink" href="#module-core.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="core.utils.Record">
+<em class="property">class </em><code class="descclassname">core.utils.</code><code class="descname">Record</code><span class="sig-paren">(</span><em>robot</em>, <em>record_mode=&lt;RecordMode.CartRecordMode: 0&gt;</em>, <em>left=True</em>, <em>sampling_frequency=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/utils.html#Record"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.utils.Record" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class provides an utility for recording trajectories. It fixes the robot in teaching mode and then it records
+the trajectory.</p>
+<dl class="method">
+<dt id="core.utils.Record.conditional_record">
+<code class="descname">conditional_record</code><span class="sig-paren">(</span><em>callback_start</em>, <em>callback_end</em>, <em>max_duration=60.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/utils.html#Record.conditional_record"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.utils.Record.conditional_record" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a conditional recording. the recording will start as soon as callback_start will return true.
+:param callback_start: Function which receives a goal as input, and produce a decision. When the decision is true,
+then the recording starts
+:param callback_end: Function which receives a goal as input, and produce a decision.
+When the decision is true, then the record will stop, and this method will return.
+:param max_duration: the overall process cannot exceed the max_duration, expressed in seconds.
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="core.utils.Record.record_fixed_duration">
+<code class="descname">record_fixed_duration</code><span class="sig-paren">(</span><em>duration=10.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/utils.html#Record.record_fixed_duration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.utils.Record.record_fixed_duration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record a trajectory of fixed time-length.
+:param duration: Duration of the trajectory expressed in seconds.
+:type duration: float
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.utils.RecordMode">
+<em class="property">class </em><code class="descclassname">core.utils.</code><code class="descname">RecordMode</code><a class="reference internal" href="_modules/core/utils.html#RecordMode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.utils.RecordMode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></p>
+<p>An enumeration.</p>
+<dl class="attribute">
+<dt id="core.utils.RecordMode.CartRecordMode">
+<code class="descname">CartRecordMode</code><em class="property"> = 0</em><a class="headerlink" href="#core.utils.RecordMode.CartRecordMode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="core.utils.RecordMode.JointRecordMode">
+<code class="descname">JointRecordMode</code><em class="property"> = 1</em><a class="headerlink" href="#core.utils.RecordMode.JointRecordMode" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="core.utils.RecordingCallback">
+<em class="property">class </em><code class="descclassname">core.utils.</code><code class="descname">RecordingCallback</code><a class="reference internal" href="_modules/core/utils.html#RecordingCallback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.utils.RecordingCallback" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="core.utils.WaitingToEnd">
+<em class="property">class </em><code class="descclassname">core.utils.</code><code class="descname">WaitingToEnd</code><span class="sig-paren">(</span><em>threshold=0.01</em>, <em>duration=1.0</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/utils.html#WaitingToEnd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.utils.WaitingToEnd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.utils.RecordingCallback" title="core.utils.RecordingCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.utils.RecordingCallback</span></code></a></p>
+<p>Stop the recording when the velocities are lower than a specific threshold for a given resting-duration.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="core.utils.WaitingToStart">
+<em class="property">class </em><code class="descclassname">core.utils.</code><code class="descname">WaitingToStart</code><span class="sig-paren">(</span><em>threshold=0.01</em>, <em>verbose=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/utils.html#WaitingToStart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.utils.WaitingToStart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#core.utils.RecordingCallback" title="core.utils.RecordingCallback"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.utils.RecordingCallback</span></code></a></p>
+<p>Simple starting callback for the conditional start of the recording.
+It activates the recording when the velocities of the joints exceed a certain threshold.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">core package</a><ul>
+<li><a class="reference internal" href="#module-core.darias_interface">core.darias_interface module</a></li>
+<li><a class="reference internal" href="#module-core.darias_space">core.darias_space module</a></li>
+<li><a class="reference internal" href="#module-core.positions">core.positions module</a></li>
+<li><a class="reference internal" href="#module-core.utils">core.utils module</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="modules.html"
+                        title="previous chapter">DariasPy</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="examples.html"
+                        title="next chapter">examples package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/core.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="examples package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="DariasPy"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">DariasPy 1.0.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="modules.html" >DariasPy</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2018, Tosatto Samuele.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.7.4.
+    </div>
+  </body>
+</html>

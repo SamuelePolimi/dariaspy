@@ -1,0 +1,34 @@
+core package
+============
+
+core.darias\_interface module
+-----------------------------
+
+.. automodule:: core.darias_interface
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core.darias\_space module
+-------------------------
+
+.. automodule:: core.darias_space
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core.positions module
+---------------------
+
+.. automodule:: core.positions
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+core.utils module
+-----------------
+
+.. automodule:: core.utils
+    :members:
+    :undoc-members:
+    :show-inheritance:

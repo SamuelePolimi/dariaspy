@@ -1,0 +1,43 @@
+examples package
+================
+
+
+examples.darias\_home module
+----------------------------
+
+.. automodule:: examples.darias_home
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+examples.darias\_home\_and\_back module
+---------------------------------------
+
+.. automodule:: examples.darias_home_and_back
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+examples.darias\_teachingmode\_cartesianpace module
+---------------------------------------------------
+
+.. automodule:: examples.darias_teachingmode_cartesianpace
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+examples.darias\_teachingmode\_conditional\_recording module
+------------------------------------------------------------
+
+.. automodule:: examples.darias_teachingmode_conditional_recording
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+examples.darias\_teachingmode\_jointspace module
+------------------------------------------------
+
+.. automodule:: examples.darias_teachingmode_jointspace
+    :members:
+    :undoc-members:
+    :show-inheritance:
