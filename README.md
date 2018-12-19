@@ -3,6 +3,55 @@ DariasPy
 
 A python interface for Darias!
 
+With this library it is possible to perform simple robotic experiments with a minimal effort. 
+For a complete documentation look into [DariasPy Guide](documentation/index.html)
+For example, for running darias in its home position, it is sufficient to write:
+
+```python
+from core.darias_interface import Darias
+from core.positions import Home_Right_Joints, Home_Left_Joints
+from core.darias_space import Trajectory, JointGoal
+
+darias = Darias()
+
+darias.go_to(Trajectory([JointGoal(Home_Left_Joints, 10.)]), left=True, wait=True)
+
+darias.go_to(Trajectory([JointGoal(Home_Right_Joints, 10.)]), left=False, wait=True)
+```
+
+or, for recording a trajectory and repeating it, is sufficient to write:
+
+```python
+
+from core.darias_interface import Darias
+from core.darias_space import Trajectory, JointGoal
+from core.utils import Record, RecordMode
+
+
+darias = Darias()
+
+darias.kinesthetic(left = True)
+recording = Record(darias, record_mode=RecordMode.JointRecordMode, left=True)
+
+print("Start recording")
+recording.record_fixed_duration(10.)
+print("Stop recording")
+
+print("Go to the initial point")
+start_trajectory = Trajectory([JointGoal(recording.trajectory.goal_list[0].position, 10.)])
+darias.go_to(start_trajectory, left=True)
+print("Initial position reached")
+
+print("Start repeating the recorded trajectory")
+darias.go_to(recording.trajectory, left=True)
+print("Done :)")
+```
+
+The library already exposes some nice features, like the possibility to starting the trajectory conditioning on a specific
+event (such as velocity exceeding a threshold), but it will be extended in the near future with more specific funtionalities.
+
+A long-term goal would ideally be to have a simpler and common interface to all our robots :).
+
 References to Darias
 --------------------
 
@@ -33,3 +82,4 @@ Goals
 - [x] Robot mode
 - [x] Record Trajectory 
 - [ ] Include Optitrack
+- [ ] Possible interface with other robots
