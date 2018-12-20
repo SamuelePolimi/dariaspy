@@ -161,6 +161,7 @@
 <span class="kn">import</span> <span class="nn">actionlib</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
+<span class="kn">from</span> <span class="nn">ros_listener</span> <span class="k">import</span> <span class="n">RosListener</span><span class="p">,</span> <span class="n">activate_listener</span>
 <span class="kn">from</span> <span class="nn">darias_space</span> <span class="k">import</span> <span class="n">Trajectory</span><span class="p">,</span> <span class="n">TrajectoryType</span>
 
 
@@ -168,22 +169,6 @@
 
     <span class="n">DariasCommandMode</span> <span class="o">=</span> <span class="mi">3</span>
     <span class="n">DariasKinestheticMode</span> <span class="o">=</span> <span class="mi">4</span></div>
-
-
-<div class="viewcode-block" id="RosListener"><a class="viewcode-back" href="../../core.html#core.darias_interface.RosListener">[docs]</a><span class="k">class</span> <span class="nc">RosListener</span><span class="p">:</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span> <span class="o">=</span> <span class="kc">False</span>
-
-    <span class="k">def</span> <span class="nf">_internal_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_callback</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span> <span class="o">=</span> <span class="kc">True</span>
-
-    <span class="k">def</span> <span class="nf">_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
-
-<div class="viewcode-block" id="RosListener.get_callback"><a class="viewcode-back" href="../../core.html#core.darias_interface.RosListener.get_callback">[docs]</a>    <span class="k">def</span> <span class="nf">get_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_internal_callback</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="GeometricPoint"><a class="viewcode-back" href="../../core.html#core.darias_interface.GeometricPoint">[docs]</a><span class="k">class</span> <span class="nc">GeometricPoint</span><span class="p">(</span><span class="n">RosListener</span><span class="p">):</span>
@@ -215,7 +200,7 @@
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">settings_service</span> <span class="o">=</span> <span class="n">rospy</span><span class="o">.</span><span class="n">ServiceProxy</span><span class="p">(</span><span class="s1">&#39;/darias_control/darias/settings&#39;</span><span class="p">,</span> <span class="n">SettingsUpdate</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_mode</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_mode</span><span class="p">(</span><span class="n">DariasMode</span><span class="o">.</span><span class="n">DariasCommandMode</span><span class="p">)</span>
 
 <div class="viewcode-block" id="DariasModeController.set_mode"><a class="viewcode-back" href="../../core.html#core.darias_interface.DariasModeController.set_mode">[docs]</a>    <span class="k">def</span> <span class="nf">set_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -281,14 +266,15 @@
         <span class="n">rospy</span><span class="o">.</span><span class="n">Subscriber</span><span class="p">(</span><span class="s1">&#39;/darias_control/darias/ENDEFF_</span><span class="si">%s</span><span class="s1">_ARM_pos&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="s1">&#39;LEFT&#39;</span> <span class="k">if</span> <span class="n">left</span> <span class="k">else</span> <span class="s1">&#39;RIGHT&#39;</span><span class="p">),</span> <span class="n">TransformStamped</span><span class="p">,</span>
                          <span class="bp">self</span><span class="o">.</span><span class="n">get_callback</span><span class="p">())</span></div>
 
-
 <div class="viewcode-block" id="Darias"><a class="viewcode-back" href="../../core.html#core.darias_interface.Darias">[docs]</a><span class="k">class</span> <span class="nc">Darias</span><span class="p">:</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Instantiates an interface for darias.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">rospy</span><span class="o">.</span><span class="n">init_node</span><span class="p">(</span><span class="s2">&quot;listener&quot;</span><span class="p">,</span> <span class="n">anonymous</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;before activating&quot;</span><span class="p">)</span>
+        <span class="n">activate_listener</span><span class="p">()</span>
 
         <span class="c1">#########################################</span>
         <span class="c1"># State</span>

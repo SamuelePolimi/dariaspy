@@ -170,7 +170,7 @@ In future the joints will be divided in four groups (left-arm; left-hand; right-
 <dl class="class">
 <dt id="core.darias_interface.Arms">
 <em class="property">class </em><code class="descclassname">core.darias_interface.</code><code class="descname">Arms</code><a class="reference internal" href="_modules/core/darias_interface.html#Arms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.Arms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#core.darias_interface.RosListener" title="core.darias_interface.RosListener"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.darias_interface.RosListener</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ros_listener.RosListener</span></code></p>
 <p>Defines the robotics’ arms.
 We can access to the left arm or to the right one.</p>
 </dd></dl>
@@ -266,7 +266,7 @@ In order to stop this service it is sufficient to call mode.set_mode(DariasComma
 <dl class="class">
 <dt id="core.darias_interface.GeometricPoint">
 <em class="property">class </em><code class="descclassname">core.darias_interface.</code><code class="descname">GeometricPoint</code><a class="reference internal" href="_modules/core/darias_interface.html#GeometricPoint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.GeometricPoint" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#core.darias_interface.RosListener" title="core.darias_interface.RosListener"><code class="xref py py-class docutils literal notranslate"><span class="pre">core.darias_interface.RosListener</span></code></a></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ros_listener.RosListener</span></code></p>
 <dl class="attribute">
 <dt id="core.darias_interface.GeometricPoint.position">
 <code class="descname">position</code><a class="headerlink" href="#core.darias_interface.GeometricPoint.position" title="Permalink to this definition">¶</a></dt>
@@ -279,17 +279,6 @@ In order to stop this service it is sufficient to call mode.set_mode(DariasComma
 <em class="property">class </em><code class="descclassname">core.darias_interface.</code><code class="descname">Joint</code><span class="sig-paren">(</span><em>position</em>, <em>velocity</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_interface.html#Joint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.Joint" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Defines a robotic joint.</p>
-</dd></dl>
-
-<dl class="class">
-<dt id="core.darias_interface.RosListener">
-<em class="property">class </em><code class="descclassname">core.darias_interface.</code><code class="descname">RosListener</code><a class="reference internal" href="_modules/core/darias_interface.html#RosListener"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.RosListener" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="method">
-<dt id="core.darias_interface.RosListener.get_callback">
-<code class="descname">get_callback</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/core/darias_interface.html#RosListener.get_callback"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#core.darias_interface.RosListener.get_callback" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 </div>
