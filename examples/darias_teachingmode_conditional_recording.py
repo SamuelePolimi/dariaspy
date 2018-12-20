@@ -17,6 +17,7 @@ from core.darias_space import Trajectory, JointGoal
 from core.utils import Record, RecordMode, WaitingToStart, WaitingToEnd
 
 if __name__ == "__main__":
+    print("hey")
     darias = Darias()
 
     darias.kinesthetic(left = True)
