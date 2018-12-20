@@ -17,6 +17,7 @@ from ias_robot_msgs.srv import SettingsUpdate, SettingsUpdateRequest, Kinestheti
 import actionlib
 import numpy as np
 
+from ros_listener import RosListener, activate_listener
 from darias_space import Trajectory, TrajectoryType
 
 
@@ -24,22 +25,6 @@ class DariasMode:
 
     DariasCommandMode = 3
     DariasKinestheticMode = 4
-
-
-class RosListener:
-
-    def __init__(self):
-        self.ready = False
-
-    def _internal_callback(self, data):
-        self._callback(data)
-        self.ready = True
-
-    def _callback(self, data):
-        raise NotImplementedError()
-
-    def get_callback(self):
-        return lambda x: self._internal_callback(x)
 
 
 class GeometricPoint(RosListener):
@@ -137,14 +122,15 @@ class EndEffector(GeometricPoint):
         rospy.Subscriber('/darias_control/darias/ENDEFF_%s_ARM_pos' % ('LEFT' if left else 'RIGHT'), TransformStamped,
                          self.get_callback())
 
-
 class Darias:
 
     def __init__(self):
         """
         Instantiates an interface for darias.
         """
-        rospy.init_node("listener", anonymous=True)
+
+        print("before activating")
+        activate_listener()
 
         #########################################
         # State
