@@ -81,5 +81,9 @@ Goals
 - [x] Definition of Trajectory
 - [x] Robot mode
 - [x] Record Trajectory 
-- [ ] Include Optitrack
+- [x] Points from optitrack
+- [ ] Transormation relative to a reference-frame
+- [ ] Create `observers`. Will be useful either for distinguish arm and hand, an also for generalizing recording.
+- [ ] Record extended/generalized to optitrack objects
+- [ ] Hand control
 - [ ] Possible interface with other robots
