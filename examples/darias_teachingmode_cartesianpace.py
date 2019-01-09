@@ -9,9 +9,9 @@ gravity compensation)
 Everything will happen in the cartesian space.
 """
 
-from core.darias_interface import Darias
-from core.darias_space import Trajectory, CartGoal
-from core.utils import Record, RecordMode
+from dariaspy.darias_interface import Darias
+from dariaspy.darias_space import Trajectory, CartGoal
+from dariaspy.utils import Record, RecordMode
 
 if __name__ == "__main__":
     darias = Darias()

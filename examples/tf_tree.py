@@ -4,8 +4,8 @@ Example - TF-Tree. Working in progress!
 """
 import time
 
-from core.optitrack import TFFrames
-from core.darias_interface import Darias
+from dariaspy.optitrack import TFFrames
+from dariaspy.darias_interface import Darias
 
 
 if __name__ == "__main__":

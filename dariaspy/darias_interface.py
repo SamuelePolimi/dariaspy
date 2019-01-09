@@ -91,6 +91,16 @@ class Joint:
         self.velocity = velocity
 
 
+class Hand:
+
+    def __init__(self):
+        self.fingers = [np.zeros(3) for _ in range(5)]
+
+    def update(self, info):
+        for i in range(5):
+            self.fingers[i] = info[0+i*3:(i+1)*3]
+
+
 class Arms(RosListener):
     """
     Defines the robotics' arms.
@@ -108,7 +118,7 @@ class Arms(RosListener):
     def _callback(self, data):
 
         if self.order is None:
-            self.order = data.name[15:22] + data.name[:15] + data.name[27:44] + data.name[22:37]
+            self.order = data.name[15:22] + data.name[:15] + data.name[37:44] + data.name[22:37]
         self.right.position = np.concatenate([data.position[15:22], data.position[:15]], axis=0)
         self.left.position = np.concatenate([data.position[37:44], data.position[22:37]], axis=0)
         self.right.velocity = np.concatenate([data.velocity[15:22], data.velocity[:15]], axis=0)
@@ -121,6 +131,7 @@ class EndEffector(GeometricPoint):
         GeometricPoint.__init__(self)
         rospy.Subscriber('/darias_control/darias/ENDEFF_%s_ARM_pos' % ('LEFT' if left else 'RIGHT'), TransformStamped,
                          self.get_callback())
+
 
 class Darias:
 

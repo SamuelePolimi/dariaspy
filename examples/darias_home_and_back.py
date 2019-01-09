@@ -1,9 +1,9 @@
 """
 Example: bring the robot in its home position and then bring it back to his initial position.
 """
-from core.darias_interface import Darias
-from core.positions import Home_Right_Joints, Home_Left_Joints
-from core.darias_space import Trajectory, JointGoal
+from dariaspy.darias_interface import Darias
+from dariaspy.positions import Home_Right_Joints, Home_Left_Joints
+from dariaspy.darias_space import Trajectory, JointGoal
 
 if __name__ == "__main__":
     darias = Darias()

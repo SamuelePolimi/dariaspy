@@ -10,9 +10,9 @@ Everything will happen in the joint space.
 """
 
 
-from core.darias_interface import Darias
-from core.darias_space import Trajectory, JointGoal
-from core.utils import Record, RecordMode
+from dariaspy.darias_interface import Darias
+from dariaspy.darias_space import Trajectory, JointGoal
+from dariaspy.utils import Record, RecordMode
 
 if __name__ == "__main__":
     darias = Darias()
