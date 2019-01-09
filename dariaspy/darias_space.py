@@ -77,7 +77,7 @@ class CartGoal(Goal):
     """
 
     def __init__(self, position=None, duration=1):
-        Goal.__init__(self, position, duration, GoalDimension.CartGoalDimensions)
+        Goal.__init__(self, position, duration, GoalDimension.CartGoalDimensions.value)
 
 
 class JointGoal(Goal):
@@ -86,7 +86,7 @@ class JointGoal(Goal):
     """
 
     def __init__(self, position=None, duration=1):
-        Goal.__init__(self, position, duration, GoalDimension.JointGoalDimensions)
+        Goal.__init__(self, position, duration, GoalDimension.JointGoalDimensions.value)
 
 
 class Trajectory:
@@ -112,11 +112,11 @@ class Trajectory:
         """
         self.goal_list = []
         for array in loa:
-            if array.shape[0] == GoalDimension.CartGoalDimensions + 1:
+            if array.shape[0] == GoalDimension.CartGoalDimensions.value + 1:
                 goal = CartGoal()
                 goal.from_array(array)
                 self.goal_list.append(goal)
-            elif array.shape[0] == GoalDimension.JointGoalDimensions + 1:
+            elif array.shape[0] == GoalDimension.JointGoalDimensions.value + 1:
                 goal = JointGoal()
                 goal.from_array(array)
                 self.goal_list.append(goal)
@@ -162,7 +162,7 @@ class Trajectory:
         """
         flag = True
         for goal in self.goal_list:
-            if goal.dimensions != GoalDimension.CartGoalDimensions:
+            if goal.dimensions != GoalDimension.CartGoalDimensions.value:
                 flag = False
                 break
 
@@ -171,7 +171,7 @@ class Trajectory:
 
         flag = True
         for goal in self.goal_list:
-            if goal.dimensions != GoalDimension.JointGoalDimensions:
+            if goal.dimensions != GoalDimension.JointGoalDimensions.value:
                 flag = False
                 break
 
