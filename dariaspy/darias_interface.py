@@ -13,15 +13,19 @@ import rospy
 from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import JointState
 from ias_robot_msgs.msg import GoToGoal, State, GoToAction
-from ias_robot_msgs.srv import SettingsUpdate, SettingsUpdateRequest, KinestheticRequest, Kinesthetic
+from ias_robot_msgs.srv import SettingsUpdate, SettingsUpdateRequest, KinestheticRequest, Kinesthetic, RobotInformation, RobotInformationRequest
+
 import actionlib
 import numpy as np
+from enum import Enum
 
 from ros_listener import RosListener, activate_listener
+from recording import NamedTrajectoryBase
+from groups import Group
 from darias_space import Trajectory, TrajectoryType
 
 
-class DariasMode:
+class DariasMode(Enum):
 
     DariasCommandMode = 3
     DariasKinestheticMode = 4
@@ -42,7 +46,7 @@ class GeometricPoint(RosListener):
         ])
         self.rotation = np.array([
             data.transform.rotation.w,
-            data.transform.rotation.z,
+            data.transform.rotation.x,
             data.transform.rotation.y,
             data.transform.rotation.z
         ])
@@ -72,7 +76,7 @@ class DariasModeController:
         """
         settings_request = SettingsUpdateRequest()
         settings_request.mask = settings_request.MODE
-        settings_request.settings.mode = mode
+        settings_request.settings.mode = mode.value
         try:
             self.settings_service(settings_request)
         except rospy.ServiceException as exc:
@@ -101,6 +105,16 @@ class Hand:
             self.fingers[i] = info[0+i*3:(i+1)*3]
 
 
+class InfoExposer:
+
+    def __init__(self, *info_esposers):
+        """
+        An info exposer object exposes the information about some quantities.
+        It can also 
+        :param info_esposers:
+        """
+
+
 class Arms(RosListener):
     """
     Defines the robotics' arms.
@@ -114,8 +128,11 @@ class Arms(RosListener):
         self.right = Joint(None, None)
         self.left = Joint(None, None)
         self.order = None
+        self.info = {}
 
     def _callback(self, data):
+        for i, ref in enumerate(data.name):
+            self.info[ref] = data.position[i]
 
         if self.order is None:
             self.order = data.name[15:22] + data.name[:15] + data.name[37:44] + data.name[22:37]
@@ -140,7 +157,6 @@ class Darias:
         Instantiates an interface for darias.
         """
 
-        print("before activating")
         activate_listener()
 
         #########################################
@@ -157,6 +173,10 @@ class Darias:
         self._handle_goto_service = actionlib.SimpleActionClient('/darias_control/darias/goto', GoToAction)
         self._handle_goto_service.wait_for_server()
 
+        self.groups = {}
+        self._building_groups()
+
+
         while not(self.arms.ready and self.left_end_effector.ready and self.right_end_effector.ready):
             pass
 
@@ -171,7 +191,7 @@ class Darias:
         :param wait: wait for the trajectory to be done
         :type wait: bool
         """
-        self.mode.set_mode(3)
+        self.mode.set_mode(DariasMode.DariasCommandMode) #TODO
 
         # Construct the Command Message:
         joint_goal = GoToGoal()
@@ -195,7 +215,38 @@ class Darias:
         if wait:
             self._handle_goto_service.wait_for_result()
 
-    def kinesthetic(self, left=True):
+    def go_to_1(self, trajectory, group_name):
+        """
+        It performs a desired trajectory.
+
+        :param trajectory: trajectory to follow
+        :type trajectory: NamedTrajectoryBase
+        :param group_name: Name of the group
+        :type group_name: str
+        """
+        self.mode.set_mode(DariasMode.DariasCommandMode)
+
+        # Construct the Command Message:
+        joint_goal = GoToGoal()
+        if group_name in ['ENDEFF_LEFT_ARM', 'ENDEFF_RIGHT_ARM']:
+            joint_goal.type = joint_goal.CART
+        else:
+            joint_goal.type = joint_goal.JOINT
+
+        joint_goal.group = self.groups[group_name].group_name
+
+        for goal, d in trajectory:
+            joint_state = State()
+            joint_state.duration = d
+            joint_state.destination = [goal[k] for k in self.groups[group_name].refs]
+            joint_goal.states.append(joint_state)
+
+        self._handle_goto_service.send_goal(joint_goal)
+        if True:
+            self._handle_goto_service.wait_for_result()
+
+
+    def kinesthetic(self, group):
         """
         This method provide the kinerthetic teaching (i.e., gravity compensation mode).
         In order to stop this service it is sufficient to call mode.set_mode(DariasCommandMode)
@@ -210,14 +261,29 @@ class Darias:
         kin_service = rospy.ServiceProxy('darias_control/darias/kinesthetic', Kinesthetic)
         start_msg = KinestheticRequest()
         start_msg.mirrored = False
-        if left:
-            start_msg.teached_group = 'LEFT_ARM'
-        else:
-            start_msg.teached_group = 'RIGHT_ARM'
+        start_msg.teached_group = self.groups[group].group_name
 
         try:
             kin_service(start_msg)
         except rospy.ServiceException as exc:
             print("Kinesthetic Service error: " + str(exc))
+            return
+
+    def _building_groups(self):
+
+        rospy.wait_for_service('/darias_control/darias/information')
+        service = rospy.ServiceProxy('/darias_control/darias/information', RobotInformation)
+        req = RobotInformationRequest()
+        try:
+            answer = service(req)
+            for group in answer.joint_space_control:
+                self.groups[group.name] = Group(group.name, group.joints)
+            self.groups["ENDEFF_LEFT_ARM"] = Group("LEFT_ARM",
+                                                   ["L_TX", "L_TY", "L_TZ", "L_RX", "L_RY", "L_RZ", "L_RW"])
+            self.groups["ENDEFF_RIGHT_ARM"] = Group("RIGHT_ARM",
+                                                    ["R_TX", "R_TY", "R_TZ", "R_RX", "R_RY", "R_RZ", "R_RW"])
+
+        except rospy.ServiceException as exc:
+            print("Information Service error: " + str(exc))
             return
 
