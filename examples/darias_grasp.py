@@ -7,187 +7,18 @@ import time
 import os
 import speech_recognition as sr
 
-import sys
-
-if not sys.warnoptions:
-    import warnings
-    warnings.simplefilter("ignore")
-
-sound_library = False
-try:
-    from gtts import gTTS
-    sound_library = True
-except ImportError:
-    print("gTTS not found. Playing with ros sound")
 from dariaspy.darias_interface import Darias, DariasMode
 from dariaspy.positions import Home_Right_Joints, Home_Left_Joints, Home_Position
 from dariaspy.darias_space import Trajectory, JointGoal
 from dariaspy.observers import DariasObserver
-from dariaspy.recording import GoToTrajectory, Recorder
+from dariaspy.recording import Recorder
+from dariaspy.trajectory import GoToTrajectory, LoadTrajectory
 
-
-class NotUnderstoodException(Exception):
-
-    def __init__(self, text):
-        Exception.__init__(self, text)
-
-
-def play_sound(text):
-    if sound_library:
-        tts = gTTS(text=text, lang='en')
-        tts.save("temporary.mp3")
-        with open(os.devnull, 'wb') as devnull:
-            subprocess.check_call(['mpg321', 'temporary.mp3'], stdout=devnull, stderr=subprocess.STDOUT)
-    else:
-        ros_sound.voiceSound(text).play()
-
-
-def hear(text=None):
-    print(1)
-    if text is not None:
-        play_sound(text)
-    r = sr.Recognizer()
-    with sr.Microphone() as source:
-        #r.adjust_for_ambient_noise(source)
-        audio = r.listen(source, timeout=120., phrase_time_limit=10.)
-    try:
-        #sys.stdout = open(os.devnull, "w")
-        #sys.stderr = open(os.devnull, "w")
-        ret = r.recognize_google(audio, show_all=True)
-        #sys.stdout = sys.__stdout__
-        #sys.stderr = sys.__stderr__
-        print (ret)
-        return ret
-    except sr.UnknownValueError:
-        play_sound("Sorry, I did not understood.")
-    except sr.RequestError:
-        print("There is a request error.")
-    except :
-        pass
 
 def move(obs, refs, displacement=0.1):
     for ref in refs:
         obs[ref] += displacement
     return obs
-
-
-##################################
-# List Of Commands
-##################################
-
-
-def go_to(position_name, group=None):
-    r_group = get_group(group)
-    if position_name in ["home", "home_position"]:
-        darias.go_to_1(GoToTrajectory(duration=10., **Home_Position), r_group)
-    else:
-        raise NotUnderstoodException("Position not understood.")
-
-
-def set_default_group(group):
-    default_group = group
-
-
-def get_group(group_name):
-    if group_name is None:
-        return default_group.upper()
-    return group_name.upper()
-
-
-def set_mode(mode, group=None):
-    r_group = get_group(group)
-    if mode=="teaching":
-        darias.kinesthetic(r_group)
-    elif mode=="command":
-        darias.mode.set_mode(DariasMode.DariasCommandMode)
-    else:
-        raise NotUnderstoodException("Mode not understood.")
-
-
-def record_trajectory(trajectory_name, group=None, number=1):
-    #TODO
-    r_group = get_group(group)
-    recording = Recorder(observer, darias.groups[r_group].refs, sampling_frequency=10)
-
-    print("Start recording")
-    recording.record_fixed_duration(10.)
-
-
-def do_trajectory(trajectory_name, group=None, safe=True):
-    pass
-
-
-def possibilities_to_command(text):
-    x = None
-    print(text)
-    for alt in text['alternative']:
-        possible_text = alt['transcript']
-        try:
-            print(possible_text)
-            text_to_command(possible_text)
-            return
-        except NotUnderstoodException as e:
-            x = e.message
-
-    if x is not None:
-        play_sound(x)
-
-
-def text_to_command(text):
-    print(text)
-    words = text.split(' ')
-
-    commands = {
-        'go': ['group'],
-        'mode': [],
-        'do': ['group'],
-        'record': ['group', 'number'],
-        'default': []
-    }
-
-    command_function = {
-        "go":go_to,
-        "mode":set_mode
-    }
-    command = None
-    for c in commands.keys():
-        if c in words:
-            command = c
-            command_indx = words.index(c)
-            break
-
-    if command is None:
-        raise NotUnderstoodException("Command not understood.")
-
-    param_indxs = []
-    for p in commands[command]:
-        if p in words:
-            param_indxs.append(words.index(p))
-        else:
-            param_indxs.append(None)
-
-    arguments = {}
-    command_id = 0
-    last_command = None
-    command_list = [command] + commands[command] + ["EOF"]
-    for word in words:
-        if word==command_list[command_id]:
-            arguments[word] = []
-            last_command = word
-            command_id += 1
-            continue
-        if last_command is not None:
-            arguments[last_command].append(word)
-
-    for k in arguments:
-        arguments[k] = "_".join(arguments[k])
-
-    print(arguments)
-    kw_args = {k:arguments[k] for k in arguments if k != command}
-    print(kw_args)
-    command_function[command](arguments[command], **kw_args)
-
-
 
 
 if __name__ == "__main__":
@@ -196,26 +27,18 @@ if __name__ == "__main__":
 
     default_group = "WHOLE_ROBOT"
 
-    ros_sound = SoundClient()
-    with open(os.devnull, 'w') as devnull:
-        proc = subprocess.Popen(['rosrun', 'sound_play', 'soundplay_node.py'], stdout=devnull, stderr=devnull)
-    time.sleep(1.)
-
-    #print(text_to_command("record my trajectory group left arm number two"))
-    text = hear("Hi Samuel, what do you want to do? ")
-    possibilities_to_command(text)
-    while True:
-        text = hear("I am ready, what do you want to do?")
-        possibilities_to_command(text)
-
-
-
-
-
     darias.go_to_1(GoToTrajectory(duration=10., **Home_Position), "LEFT_HAND")
+    darias.go_to_1(LoadTrajectory("traj.npy"), "LEFT_HAND")
+    exit()
     observer = DariasObserver(darias)
     observation = observer(*darias.groups["LEFT_HAND"].refs)
     for _ in range(10):
         observation = move(observation, ['L_RIP', 'L_MIP', 'L_INP', 'L_RIP', 'L_SMP'], displacement=0.05)
         darias.go_to_1(GoToTrajectory(duration=0.1, **observation), "LEFT_HAND")
+
+
+    fin_traj = GoToTrajectory(duration=1., **observation)
+    fin_traj.save("traj.npy")
+
+
 
