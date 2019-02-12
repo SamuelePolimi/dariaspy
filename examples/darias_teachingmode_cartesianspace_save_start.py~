@@ -6,26 +6,25 @@ gravity compensation)
 3. The arm will be brought to its initial position
 4. The recorded trajectory will be imitated.
 
-Everything will happen in the joint space.
+Everything will happen in the cartesian space.
 """
 
-
-from dariaspy.darias_interface import Darias
-from dariaspy.darias_space import Trajectory, JointGoal
-from dariaspy.utils import Record, RecordMode
+from core.darias_interface import Darias
+from core.darias_space import Trajectory, CartGoal
+from core.utils import Record, RecordMode
 
 if __name__ == "__main__":
     darias = Darias()
 
     darias.kinesthetic(left = True)
-    recording = Record(darias, record_mode=RecordMode.JointRecordMode, left=True)
+    recording = Record(darias, record_mode=RecordMode.CartRecordMode, left=True)
 
     print("Start recording")
     recording.record_fixed_duration(10.)
     print("Stop recording")
 
     print("Go to the initial point")
-    start_trajectory = Trajectory([JointGoal(recording.trajectory.goal_list[0].position, 10.)])
+    start_trajectory = Trajectory([CartGoal(recording.trajectory.goal_list[0].position, 10.)])
     darias.go_to(start_trajectory, left=True)
     print("Initial position reached")
 
