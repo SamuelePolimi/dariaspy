@@ -33,7 +33,7 @@ class NamedTrajectoryBase:
 
     def __iter__(self):
         for values, d in zip(self.values, self.duration):
-            yield {r: v for r, v in zip(self.refs, values)}, d
+            yield {r: v for r, v in zip(self.refs, values.ravel())}, d
 
     def save(self, filename):
         ret = {
@@ -42,6 +42,18 @@ class NamedTrajectoryBase:
             'values': self.values
         }
         np.save(filename, ret)
+
+    def get_sub_trajectory(self, *refs):
+        ret = self.get_movement(*refs)
+        return NamedTrajectoryBase(refs, self.duration, np.array(ret).T)
+
+    def get_movement(self, *refs):
+
+        ret = []
+        for ref in refs:
+            indx = self.refs.index(ref)
+            ret.append(self.values[:, indx])
+        return ret
 
 
 class GoToTrajectory(NamedTrajectoryBase):
