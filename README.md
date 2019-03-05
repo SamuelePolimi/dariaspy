@@ -57,6 +57,7 @@ References to Darias
 
 How to install the needed software (Ros, IASRos, Robcom) [Guide by Koert](https://git.ias.informatik.tu-darmstadt.de/ias_ros/ias_ros_core).
 How to start Darias [Guide by Stark and Koert](https://git.ias.informatik.tu-darmstadt.de/ausy/wiki/blob/master/tutorial_darias_right_arm/Using_DARIAS_Right_Arm2.pdf).
+How to mount the DLR hand and use it [DLR Hands Guide](dariashand.pdf).
 
 Start ros with:
 ````bash
