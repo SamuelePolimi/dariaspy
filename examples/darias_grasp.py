@@ -5,7 +5,7 @@ import subprocess
 from sound_play.libsoundplay import SoundClient
 import time
 import os
-import speech_recognition as sr
+#import speech_recognition as sr
 
 from dariaspy.darias_interface import Darias, DariasMode
 from dariaspy.positions import Home_Right_Joints, Home_Left_Joints, Home_Position
@@ -21,23 +21,43 @@ def move(obs, refs, displacement=0.1):
     return obs
 
 
+def go_home():
+    darias.go_to(GoToTrajectory(duration=0.1, **Home_Position), "RIGHT_HAND")
+
+
+def open_hand():
+    trajectory = LoadTrajectory("open_hand.npy")
+    darias.go_to(trajectory, "RIGHT_HAND")
+
+
+def grasp():
+    trajectory = LoadTrajectory("grasp.npy")
+    darias.go_to(trajectory, "RIGHT_HAND")
+
 if __name__ == "__main__":
 
     darias = Darias()
 
-    default_group = "WHOLE_ROBOT"
 
-    darias.go_to_1(GoToTrajectory(duration=10., **Home_Position), "LEFT_HAND")
-    darias.go_to_1(LoadTrajectory("traj.npy"), "LEFT_HAND")
+    open_hand()
+    time.sleep(2.)
+    grasp()
     exit()
+    #go_home()
+    #open_hand()
+
+    # open_hand = GoToTrajectory(duration=0.5, **observation)
+    # open_hand.save("open_hand.npy")
+    # exit()    # darias.go_to_1(GoToTrajectory(duration=0.1, **Home_Position), "RIGHT_HAND")
+
     observer = DariasObserver(darias)
-    observation = observer(*darias.groups["LEFT_HAND"].refs)
-    for _ in range(10):
-        observation = move(observation, ['L_RIP', 'L_MIP', 'L_INP', 'L_RIP', 'L_SMP'], displacement=0.05)
-        darias.go_to_1(GoToTrajectory(duration=0.1, **observation), "LEFT_HAND")
+    observation = observer(*darias.groups["RIGHT_HAND"].refs)
+    for _ in range(20):
+        observation = move(observation, ['R_RIP', 'R_MIP', 'R_INP', 'R_SMP', 'R_THP'], displacement=0.05)
+        darias.go_to(GoToTrajectory(duration=0.1, **observation), "RIGHT_HAND")
+        raw_input("press a key")
 
-
-    fin_traj = GoToTrajectory(duration=1., **observation)
+    fin_traj = GoToTrajectory(duration=0.1, **observation)
     fin_traj.save("traj.npy")
 
 

@@ -76,12 +76,16 @@ class JointObserver(Observer):
 
     def __call__(self, *ref_list):
         ret = {}
+        #print(ref_list)
         for ref in ref_list:
+            found = False
             for observer in self.observers:
                 if ref in observer.get_possible_refs():
-                    ret[ref] = observer(ref)
+                    ret[ref] = observer(ref)[ref]
+                    found = True
                     break
-            raise MissingRefException(ref)
+            if not found:
+                raise MissingRefException(ref)
         return ret
 
     def get_possible_refs(self):
