@@ -136,6 +136,7 @@ class Arms(RosListener):
 
         if self.order is None:
             self.order = data.name[15:22] + data.name[:15] + data.name[37:44] + data.name[22:37]
+        #TODO: old code!
         self.right.position = np.concatenate([data.position[15:22], data.position[:15]], axis=0)
         self.left.position = np.concatenate([data.position[37:44], data.position[22:37]], axis=0)
         self.right.velocity = np.concatenate([data.velocity[15:22], data.velocity[:15]], axis=0)

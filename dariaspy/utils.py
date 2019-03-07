@@ -4,13 +4,17 @@ from enum import Enum
 
 from darias_interface import Darias, DariasMode
 from darias_space import Trajectory, JointGoal, CartGoal, Goal
+"""
+@DeprecationWarning
+"""
 
-
+@DeprecationWarning
 class RecordMode(Enum):
     CartRecordMode = 0
     JointRecordMode = 1
 
 
+@DeprecationWarning
 class Record:
     """
     This class provides an utility for recording trajectories. It fixes the robot in teaching mode and then it records
@@ -91,6 +95,7 @@ class Record:
             print("Max duration reached")
 
 
+@DeprecationWarning
 class RecordingCallback:
 
     def __init__(self):
@@ -108,6 +113,7 @@ class RecordingCallback:
         """
 
 
+@DeprecationWarning
 class WaitingToStart(RecordingCallback):
     """
     Simple starting callback for the conditional start of the recording.
@@ -148,6 +154,7 @@ class WaitingToStart(RecordingCallback):
         return True
 
 
+@DeprecationWarning
 class WaitingToEnd(RecordingCallback):
     """
     Stop the recording when the velocities are lower than a specific threshold for a given resting-duration.

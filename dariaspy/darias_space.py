@@ -2,6 +2,9 @@
 This module contains the definitions of goal (which are points in 3D or Joint space with a duration in time),
 and of trajectories which can be viewed as a set of goals.
 """
+"""
+Deprecated!
+"""
 import numpy as np
 from enum import Enum
 
@@ -16,7 +19,7 @@ class TrajectoryType(Enum):
     JointTrajectoryType = 1
     MixedTrajectoryType = 2
 
-
+@DeprecationWarning
 class Goal:
     """
     This is the generic interface of a goal: a given position and the time needed to achieve it.
@@ -71,6 +74,7 @@ class Goal:
         return np.concatenate([self.position, [self.duration]], axis=0)
 
 
+@DeprecationWarning
 class CartGoal(Goal):
     """
     Goal in the cartesian space.
@@ -80,6 +84,7 @@ class CartGoal(Goal):
         Goal.__init__(self, position, duration, GoalDimension.CartGoalDimensions.value)
 
 
+@DeprecationWarning
 class JointGoal(Goal):
     """
     Goal in the joint space
@@ -89,6 +94,7 @@ class JointGoal(Goal):
         Goal.__init__(self, position, duration, GoalDimension.JointGoalDimensions.value)
 
 
+@DeprecationWarning
 class Trajectory:
     """
     A trajectory is a ordered list of goals. You can combine goal in different spaces.

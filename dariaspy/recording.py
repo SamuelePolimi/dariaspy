@@ -2,7 +2,7 @@ import numpy as np
 import time
 
 
-from trajectory import NamedTrajectoryBase, NamedTrajectory
+from trajectory import NamedTrajectory
 
 
 class Recorder:

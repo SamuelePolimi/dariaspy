@@ -49,6 +49,8 @@ class Frame:
         self.tf_object = tf_object
         self._last_update = now
 
+    # TODO: use named point
+    @DeprecationWarning
     def get_goal(self):
         """
         Provide a cartesian goal computed from the last frame update.

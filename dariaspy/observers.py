@@ -36,18 +36,26 @@ class RefInfo:
 
 
 class ObservableRefs:
-
+    """
+    All the possible references with a description.
+    """
     def __init__(self, *refs):
         self.refs = {}
         for ref in refs: self.add(ref)
 
     def add(self, ref_info):
+        """
+
+        :param ref_info: add a reference to the observation.
+        :type ref_info: RefInfo
+        :rtype: None
+        """
         if ref_info.ref_id in self.refs:
-            raise  DuplicateRefException(self.refs[ref_info.ref_id], ref_info)
+            raise DuplicateRefException(self.refs[ref_info.ref_id], ref_info)
 
         self.refs[ref_info.ref_id] = ref_info
 
-
+# TODO: insert also the joint references
 observable_refs = ObservableRefs(
     *[RefInfo("%s_%s%s" % (a, r, c), "Coordinate %s of %s of the end-effector of the  %s arm." % (c_s, r_s, a_s), False)
                 for a, a_s in zip('RL',['right', 'left'])
@@ -62,13 +70,27 @@ class Observer:
         pass
 
     def __call__(self, *ref_list):
+        """
+        Observe a list of references.
+        :param ref_list: list of the name of the reference to observe.
+        :type ref_list: str
+        :return: a dictionary of reference-values
+        :rtype: dict
+        """
         raise NotImplementedError
 
     def get_possible_refs(self):
+        """
+        Retreive all the reference observed by the observer.
+        :return:
+        """
         raise NotImplementedError
 
 
 class JointObserver(Observer):
+    """
+    Observe the union of two observer (i.e., you can observe at the same time Joint and Cartesian space.)
+    """
 
     def __init__(self, *observers):
         Observer.__init__(self)
@@ -76,7 +98,6 @@ class JointObserver(Observer):
 
     def __call__(self, *ref_list):
         ret = {}
-        #print(ref_list)
         for ref in ref_list:
             found = False
             for observer in self.observers:
@@ -96,20 +117,25 @@ class JointObserver(Observer):
 
 
 class DariasObserver(Observer):
+    """
+    Observe the entire joint space of Darias, comprehensive of hands.
+    """
 
     def __init__(self, darias):
         Observer.__init__(self)
         self.darias = darias
 
     def __call__(self, *ref_list):
-        return {ref:self.darias.arms.info[ref] for ref in ref_list}
+        return {ref: self.darias.arms.info[ref] for ref in ref_list}
 
     def get_possible_refs(self):
         return self.darias.arms.order
 
 
 class EndEffectorObserver(Observer):
-
+    """
+    Observe only the left and the right end-effectors in cartesian space.
+    """
     def __init__(self, darias):
         Observer.__init__(self)
         self.darias = darias
