@@ -1,7 +1,7 @@
 """
 This module takes care of observing a part of interest in a system
 """
-
+from optitrack import Frame
 
 class MissingRefException(Exception):
 
@@ -180,3 +180,59 @@ class EndEffectorObserver(Observer):
 
     def get_possible_refs(self):
         return self.darias.groups["ENDEFF_RIGHT_ARM"].refs + self.darias.groups["ENDEFF_LEFT_ARM"].refs
+
+
+_v2_reader = {
+    'X': 0,
+    'Y': 1,
+    'Z': 2,
+    'W': 3
+}
+
+_v1_reader = {
+    'T': 0,
+    'R': 1
+}
+
+_refs = (
+    "%s_T_X",
+    "%s_T_Y",
+    "%s_T_Z",
+    "%s_R_X",
+    "%s_R_Y",
+    "%s_R_Z",
+    "%s_R_W"
+)
+
+
+class OptitrackObserver(Observer):
+    """
+        Observe only the left and the right end-effectors in cartesian space.
+        """
+
+    def __init__(self, frame_name):
+        Observer.__init__(self)
+        self.frame = Frame(frame_name)
+
+    def __call__(self, *ref_list):
+        ret = {}
+        observation = self.frame.get_cartesian_coordinates()
+        for ref in ref_list:
+            i_1, i_2 = self._getIndexObs(ref)
+            ret[ref] = observation[i_1][i_2]
+        return ret
+
+    def _getIndexObs(self, ref_name):
+
+        vals = ref_name.split("_")
+        v1, v2 = vals[-2], vals[-1]
+        if "_".join(vals[:-2]) != self.frame.frame_name:
+            raise MissingRefException(ref_name)
+
+        try:
+            return _v1_reader[v1], _v2_reader[v2]
+        except:
+            raise MissingRefException(ref_name)
+
+    def get_possible_refs(self):
+        return [ref % self.frame.frame_name for ref in _refs]

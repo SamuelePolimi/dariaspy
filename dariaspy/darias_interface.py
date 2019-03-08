@@ -20,9 +20,8 @@ import numpy as np
 from enum import Enum
 
 from ros_listener import RosListener, activate_listener
-from recording import NamedTrajectoryBase
+from trajectory import NamedTrajectoryBase
 from groups import Group
-from darias_space import Trajectory, TrajectoryType
 
 
 class DariasMode(Enum):

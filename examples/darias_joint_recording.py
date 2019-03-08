@@ -9,14 +9,11 @@ gravity compensation)
 Everything will happen in the cartesian space.
 """
 
-from dariaspy.darias_interface import Darias, DariasMode
-from dariaspy.positions import Home_Left_Joints, Home_Right_Joints, Home_Position
-from dariaspy.darias_space import Trajectory, JointGoal
+from dariaspy.darias_interface import Darias
+from dariaspy.positions import Home_Position
 from dariaspy.recording import Recorder
 from dariaspy.trajectory import GoToTrajectory
 from dariaspy.observers import DariasObserver
-
-import time
 
 if __name__ == "__main__":
     darias = Darias()

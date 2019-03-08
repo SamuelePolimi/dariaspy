@@ -22,8 +22,7 @@ try:
 except ImportError:
     print("gTTS not found. Playing with ros sound")
 from dariaspy.darias_interface import Darias, DariasMode
-from dariaspy.positions import Home_Right_Joints, Home_Left_Joints, Home_Position
-from dariaspy.darias_space import Trajectory, JointGoal
+from dariaspy.positions import  Home_Position
 from dariaspy.observers import DariasObserver
 from dariaspy.recording import Recorder
 from dariaspy.trajectory import GoToTrajectory
