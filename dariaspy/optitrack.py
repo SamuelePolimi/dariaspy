@@ -8,7 +8,12 @@ import rospy
 
 
 reference_frame = '/darias'
-optitrack_listener = tf.TransformListener()
+
+
+class Optitrack:
+
+    def __init__(self):
+        self.listener = tf.TransformListener()
 
 
 class NotificationMissing(Exception):
@@ -25,12 +30,13 @@ class NotExistingFrame(Exception):
 
 class Frame:
 
-    def __init__(self, frame_name):
+    def __init__(self, optitrack, frame_name):
         self.frame_name = frame_name
+        self.optitrack = optitrack
 
     def get_cartesian_coordinates(self):
         try:
-            return optitrack_listener.lookupTransform(reference_frame, '/%s' % self.frame_name, rospy.Time(0))
+            return self.optitrack.listener.lookupTransform(reference_frame, '/%s' % self.frame_name, rospy.Time(0))
         except:
             raise NotExistingFrame(self.frame_name)
 
