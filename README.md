@@ -99,8 +99,10 @@ Goals
 - [x] Robot mode
 - [x] Record Trajectory 
 - [x] Points from optitrack
-- [ ] Transormation relative to a reference-frame
-- [ ] Create `observers`. Will be useful either for distinguish arm and hand, an also for generalizing recording.
-- [ ] Record extended/generalized to optitrack objects
-- [ ] Hand control
+- [x] Transormation relative to a reference-frame
+- [x] Create `observers`. Will be useful either for distinguish arm and hand, an also for generalizing recording.
+- [x] Record extended/generalized to optitrack objects
+- [x] Hand control
+- [ ] ProMPs execution
 - [ ] Possible interface with other robots
+- [ ] Better guide, finer documentation. 
