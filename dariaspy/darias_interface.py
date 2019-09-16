@@ -14,6 +14,7 @@ from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import JointState
 from ias_robot_msgs.msg import GoToGoal, State, GoToAction
 from ias_robot_msgs.srv import SettingsUpdate, SettingsUpdateRequest, KinestheticRequest, Kinesthetic, RobotInformation, RobotInformationRequest
+import time
 
 import actionlib
 import numpy as np
@@ -128,6 +129,8 @@ class Arms(RosListener):
         self.left = Joint(None, None)
         self.order = None
         self.info = {}
+        self.update_fr = 0.
+        self._last_time = time.time()
 
     def _callback(self, data):
         for i, ref in enumerate(data.name):
@@ -191,6 +194,12 @@ class Darias:
         """
         self.mode.set_mode(DariasMode.DariasCommandMode)
 
+        group = group_name
+        if group_name == 'ENDEFF_LEFT_ARM':
+            group = "LEFT_ARM"
+        elif group_name == 'ENDEFF_RIGHT_ARM':
+            group = "RIGHT_ARM"
+
         # Construct the Command Message:
         joint_goal = GoToGoal()
         if group_name in ['ENDEFF_LEFT_ARM', 'ENDEFF_RIGHT_ARM']:
@@ -198,7 +207,7 @@ class Darias:
         else:
             joint_goal.type = joint_goal.JOINT
 
-        joint_goal.group = self.groups[group_name].group_name
+        joint_goal.group = group
 
         joint_goal.weight = goal_weight
         joint_goal.priority = joint_goal.APPEND
@@ -245,9 +254,9 @@ class Darias:
             answer = service(req)
             for group in answer.joint_space_control:
                 self.groups[group.name] = Group(group.name, group.joints)
-            self.groups["ENDEFF_LEFT_ARM"] = Group("LEFT_ARM",
+            self.groups["ENDEFF_LEFT_ARM"] = Group("ENDEFF_LEFT_ARM",
                                                    ["L_TX", "L_TY", "L_TZ", "L_RX", "L_RY", "L_RZ", "L_RW"])
-            self.groups["ENDEFF_RIGHT_ARM"] = Group("RIGHT_ARM",
+            self.groups["ENDEFF_RIGHT_ARM"] = Group("ENDEFF_RIGHT_ARM",
                                                     ["R_TX", "R_TY", "R_TZ", "R_RX", "R_RY", "R_RZ", "R_RW"])
 
         except rospy.ServiceException as exc:

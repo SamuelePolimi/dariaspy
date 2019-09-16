@@ -3,7 +3,7 @@ import time
 
 
 from trajectory import NamedTrajectory
-
+import warnings
 
 class Recorder:
     """
@@ -39,10 +39,17 @@ class Recorder:
         :type duration: float
 
         """
-
+        warning = False
         for t in range(int(duration * self.sampling_frequency)):
+            start = time.time()
             self.trajectory.notify(duration=self.dt, **self.observer(*self.refs))
-            time.sleep(self.dt)
+            delta = time.time() - start
+            if delta >= self.dt:
+                delta = self.dt
+                warning = True
+            time.sleep(self.dt - delta)
+        if warning:
+            warnings.warn("The computation exceeded the frequency requested.", Warning)
 
     def conditional_record(self, callback_start, callback_end, max_duration=60.):
         """
@@ -66,7 +73,10 @@ class Recorder:
             duration += self.dt
 
         if duration >= max_duration:
-            print("Max duration reached")
+            print("Max duration reached.")
+
+    def reset(self):
+        self.trajectory = NamedTrajectory(*self.refs)
 
 
 class RecordingCallback:
