@@ -1,3 +1,4 @@
+#!/usr/bin/python2.7
 """
 Example
 1. Set the robot in teaching mode
@@ -9,6 +10,7 @@ gravity compensation)
 Everything will happen in the cartesian space.
 """
 
+from dariaspy.ros_listener import activate_listener
 from dariaspy.darias_interface import Darias
 from dariaspy.positions import Home_Position
 from dariaspy.recording import Recorder
@@ -16,6 +18,9 @@ from dariaspy.trajectory import GoToTrajectory
 from dariaspy.observers import DariasObserver
 
 if __name__ == "__main__":
+
+    activate_listener()
+
     darias = Darias()
 
     observer = DariasObserver(darias)

@@ -160,8 +160,6 @@ class Darias:
         Instantiates an interface for darias.
         """
 
-        activate_listener()
-
         #########################################
         # State
         #########################################
@@ -183,13 +181,15 @@ class Darias:
         while not(self.arms.ready and self.left_end_effector.ready and self.right_end_effector.ready):
             pass
 
-    def go_to(self, trajectory, group_name, goal_weight=1.0):
+    def go_to(self, trajectory, group_name, goal_weight=1.0, wait=True):
         """
         It performs a desired trajectory.
 
         :param trajectory: trajectory to follow
         :type trajectory: NamedTrajectoryBase
         :param group_name: Name of the group
+        :param goal_weight: How much the velocity in the via-points:
+        :type goal_weight: float
         :type group_name: str
         """
         self.mode.set_mode(DariasMode.DariasCommandMode)
@@ -219,7 +219,7 @@ class Darias:
             joint_goal.states.append(joint_state)
 
         self._handle_goto_service.send_goal(joint_goal)
-        if True:
+        if wait:
             self._handle_goto_service.wait_for_result()
 
     def kinesthetic(self, group):

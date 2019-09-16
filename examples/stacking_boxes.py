@@ -4,6 +4,7 @@ Example - Simulating a stacking task
 
 import time
 
+from dariaspy.ros_listener import activate_listener
 from dariaspy.darias_interface import Darias, DariasMode
 from dariaspy.positions import  Home_Position
 from dariaspy.observers import DariasObserver
@@ -40,6 +41,8 @@ def grasp():
 
 #TODO: comment the code and print the useful information
 if __name__ == "__main__":
+
+    activate_listener()
 
     darias = Darias()
     pick_trajectories = []

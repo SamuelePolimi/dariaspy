@@ -5,12 +5,9 @@ Here there is the interface with ROS.
 """
 import rospy
 
-_listener = None
-
 
 def activate_listener():
-    if _listener is None:
-        rospy.init_node("listener", anonymous=True)
+    rospy.init_node("listener", anonymous=True)
 
 
 class RosListener:

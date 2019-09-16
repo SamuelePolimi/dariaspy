@@ -1,5 +1,6 @@
 import time
 
+from dariaspy.ros_listener import activate_listener
 from dariaspy.positions import Home_Position
 from dariaspy.darias_interface import Darias
 from dariaspy.observers import OptitrackObserver, EndEffectorObserver
@@ -23,6 +24,9 @@ def mixed_observation(object_obs, hand_obs):
 
 
 if __name__ == "__main__":
+
+    activate_listener()
+
     darias = Darias()
 
     darias.go_to(GoToTrajectory(**Home_Position), "RIGHT_ARM")

@@ -1,6 +1,11 @@
 DariasPy
 ========
 
+> **WARNING**: The new updates requires **robcom interface for python** (recompile robcom allowing in the configuration python).
+
+> **WARNING**: From now on it is necessary to import **activate listener** from dariaspy.ros_listener and execute it before anything else.
+
+
 A python interface for Darias!
 
 With this library it is possible to perform simple robotic experiments with a minimal effort. 
@@ -8,43 +13,54 @@ For a complete documentation look into [DariasPy Guide](https://samuelepolimi.gi
 For example, for running darias in its home position, it is sufficient to write:
 
 ```python
-from core.darias_interface import Darias
-from core.positions import Home_Right_Joints, Home_Left_Joints
-from core.darias_space import Trajectory, JointGoal
+from dariaspy.ros_listener import activate_listener
+from dariaspy.darias_interface import Darias
+from dariaspy.positions import Home_Position
+from dariaspy.trajectory import GoToTrajectory
 
-darias = Darias()
+if __name__ == "__main__":
 
-darias.go_to(Trajectory([JointGoal(Home_Left_Joints, 10.)]), left=True, wait=True)
+    activate_listener()
 
-darias.go_to(Trajectory([JointGoal(Home_Right_Joints, 10.)]), left=False, wait=True)
+    darias = Darias()
+    print("Home position")
+    darias.go_to(GoToTrajectory(**Home_Position), "RIGHT_ARM")
 ```
 
 or, for recording a trajectory and repeating it, is sufficient to write:
 
 ```python
 
-from core.darias_interface import Darias
-from core.darias_space import Trajectory, JointGoal
-from core.utils import Record, RecordMode
+from dariaspy.ros_listener import activate_listener
+from dariaspy.darias_interface import Darias
+from dariaspy.positions import Home_Position
+from dariaspy.recording import Recorder
+from dariaspy.trajectory import GoToTrajectory
+from dariaspy.observers import DariasObserver
 
+if __name__ == "__main__":
+    
+    activate_listener()
+    
+    darias = Darias()
 
-darias = Darias()
+    observer = DariasObserver(darias)
 
-darias.kinesthetic(left = True)
-recording = Record(darias, record_mode=RecordMode.JointRecordMode, left=True)
+    print("Go.")
+    darias.go_to(GoToTrajectory(duration=5., **Home_Position), "RIGHT_ARM")
 
-print("Start recording")
-recording.record_fixed_duration(10.)
-print("Stop recording")
+    print("Arm in Home Position.")
+    darias.kinesthetic("RIGHT_ARM")
+    print("Kinesthetic teaching")
 
-print("Go to the initial point")
-start_trajectory = Trajectory([JointGoal(recording.trajectory.goal_list[0].position, 10.)])
-darias.go_to(start_trajectory, left=True)
-print("Initial position reached")
+    recording = Recorder(observer, observer.get_possible_refs(), sampling_frequency=10)
 
-print("Start repeating the recorded trajectory")
-darias.go_to(recording.trajectory, left=True)
-print("Done :)")
+    print("Start recording")
+    recording.record_fixed_duration(10.)
+    print("Stop recording")
+
+    darias.go_to(GoToTrajectory(duration=10., **Home_Position), "RIGHT_ARM")
+    darias.go_to(recording.trajectory, "RIGHT_ARM")
 ```
 
 The library already exposes some nice features, like the possibility to starting the trajectory conditioning on a specific
