@@ -1,7 +1,9 @@
 """
 This module takes care of observing a part of interest in a system
 """
+
 from optitrack import Frame
+
 
 class MissingRefException(Exception):
 
@@ -195,13 +197,13 @@ _v1_reader = {
 }
 
 _refs = (
-    "%s_T_X",
-    "%s_T_Y",
-    "%s_T_Z",
-    "%s_R_X",
-    "%s_R_Y",
-    "%s_R_Z",
-    "%s_R_W"
+    "%s_TX",
+    "%s_TY",
+    "%s_TZ",
+    "%s_RX",
+    "%s_RY",
+    "%s_RZ",
+    "%s_RW"
 )
 
 
@@ -225,8 +227,8 @@ class OptitrackObserver(Observer):
     def _getIndexObs(self, ref_name):
 
         vals = ref_name.split("_")
-        v1, v2 = vals[-2], vals[-1]
-        if "_".join(vals[:-2]) != self.frame.frame_name:
+        v1, v2 = vals[-1][0], vals[-1][1]
+        if "_".join(vals[:-1]) != self.frame.frame_name:
             raise MissingRefException(ref_name)
 
         try:
