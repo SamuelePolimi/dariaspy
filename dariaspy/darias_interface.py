@@ -265,7 +265,16 @@ class Darias:
         """
         centers = mp.centers
         scales = mp.bandwidths
-        pmp = self.client.get(rc.Client.teaching_joint_space_promp, mp.group.group_name)
+
+        mp_type = rc.Client.teaching_joint_space_promp
+        group = mp.group.group_name
+        if mp.group.group_name == 'ENDEFF_LEFT_ARM':
+            mp_type = rc.Client.teaching_task_space_promp
+            group = "LEFT_ARM"
+        elif mp.group.group_name == 'ENDEFF_RIGHT_ARM':
+            mp_type = rc.Client.teaching_task_space_promp
+            group = "RIGHT_ARM"
+        pmp = self.client.get(mp_type, group)
         rbf_args = np.zeros(2 * len(mp.centers))
         rbf_args[0::2] = centers
         rbf_args[1::2] = scales

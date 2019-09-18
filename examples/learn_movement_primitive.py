@@ -15,7 +15,7 @@ from dariaspy.darias_interface import Darias
 from dariaspy.positions import Home_Position
 from dariaspy.recording import Recorder
 from dariaspy.trajectory import GoToTrajectory
-from dariaspy.observers import DariasObserver
+from dariaspy.observers import DariasObserver, EndEffectorObserver, JointObserver
 from dariaspy.movement_primitives import LearnTrajectory
 
 if __name__ == "__main__":
@@ -23,9 +23,10 @@ if __name__ == "__main__":
     activate_listener()
 
     darias = Darias()
-    print(darias.groups["RIGHT_ARM"])
 
-    observer = DariasObserver(darias)
+
+    # JointGroup allow to work in both joint space and task space.
+    observer = JointObserver(DariasObserver(darias), EndEffectorObserver(darias))
 
     print("Go.")
     darias.go_to(GoToTrajectory(duration=5., **Home_Position), "RIGHT_ARM")
@@ -40,13 +41,15 @@ if __name__ == "__main__":
     recording.record_fixed_duration(10.)
     print("Stop recording")
 
-    mp = LearnTrajectory(darias.groups["RIGHT_ARM"], recording.trajectory)
+    # You can change to "ENDEFF_RIGHT_ARM" if you want to work in task_space
+    learning_group = "RIGHT_ARM"
+    mp = LearnTrajectory(darias.groups[learning_group], recording.trajectory)
 
     print("Go to the initial point of the movement primitive")
     tr_init = mp.get_init_trajectory(10.)
 
     # Go to the correct position
-    darias.go_to(tr_init, "RIGHT_ARM")
+    darias.go_to(tr_init, learning_group)
 
     print("Play the movement primitive")
     # Go to with movement primitive
