@@ -103,6 +103,9 @@ Goals
 - [x] Create `observers`. Will be useful either for distinguish arm and hand, an also for generalizing recording.
 - [x] Record extended/generalized to optitrack objects
 - [x] Hand control
-- [ ] ProMPs execution
-- [ ] Possible interface with other robots
-- [ ] Better guide, finer documentation. 
+- [x] ProMPs execution
+- [ ] Move to Robcom2 once it offers promps
+- [ ] General interface with other robots
+- [ ] Better guide, finer documentation
+- [ ] Exposition of shell commands
+- [ ] Gui interface for status and commands
