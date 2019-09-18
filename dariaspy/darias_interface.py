@@ -9,6 +9,7 @@ In future the joints will be divided in four groups (left-arm; left-hand; right-
 
 Darias interfaces exposes also two methods, one for control and one for kinesthetic teaching.
 """
+import robcom.client as rc
 import rospy
 from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import JointState
@@ -20,9 +21,10 @@ import actionlib
 import numpy as np
 from enum import Enum
 
-from ros_listener import RosListener, activate_listener
-from trajectory import NamedTrajectoryBase
-from groups import Group
+from dariaspy.ros_listener import RosListener
+from dariaspy.trajectory import NamedTrajectoryBase
+from dariaspy.groups import Group
+from dariaspy.movement_primitives import MovementPrimitive
 
 
 class DariasMode(Enum):
@@ -155,11 +157,14 @@ class EndEffector(GeometricPoint):
 
 class Darias:
 
-    def __init__(self):
+    def __init__(self, local=True):
         """
         Instantiates an interface for darias.
         """
 
+        ip = "127.0.0.1" if local else "192.168.1.102"
+
+        self.client = rc.Client(ip, 2013, "darias", max_payload_size=5*1012, max_buffer_size=5*1024*1024)
         #########################################
         # State
         #########################################
@@ -167,6 +172,8 @@ class Darias:
         self.right_end_effector = EndEffector(False)
         self.arms = Arms()
         self.mode = DariasModeController()
+
+        self.frequency = 1000.
 
         #########################################
         # Action
@@ -244,6 +251,41 @@ class Darias:
         except rospy.ServiceException as exc:
             print("Kinesthetic Service error: " + str(exc))
             return
+
+    def goto_mp(self, mp, duration=10., wait=True):
+        """
+
+        :param mp: The MP already defined between 0. and 1.
+        :type mp: MovementPrimitive
+        :param duration: The duration of the movement
+        :type duration: float
+        :param wait: True if we want to wait the end of the movement.
+        :type wait: bool
+        :return: if wait==False then it returns a function which, when called, will wait for the completion of the movement
+        """
+        centers = mp.centers
+        scales = mp.bandwidths
+        pmp = self.client.get(rc.Client.teaching_joint_space_promp, mp.group.group_name)
+        rbf_args = np.zeros(2 * len(mp.centers))
+        rbf_args[0::2] = centers
+        rbf_args[1::2] = scales
+
+        #TODO: what is that?
+        wi_args = np.array([0.5])
+
+        fr_required = self.frequency * duration
+        dz = 1. / fr_required
+
+        w = np.array([mp.params[ref] for ref in mp.group.refs])
+
+        self.client.mode = rc.Client.mode_teaching
+        pmp.setup(pmp.rbf, rbf_args, w, pmp.linear, wi_args, 0., 1., dz)
+
+        pmp.start()
+
+        if not wait:
+            return pmp.stop
+        pmp.stop()
 
     def _building_groups(self):
 
