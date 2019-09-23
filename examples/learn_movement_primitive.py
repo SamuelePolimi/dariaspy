@@ -16,7 +16,7 @@ from dariaspy.positions import Home_Position
 from dariaspy.recording import Recorder
 from dariaspy.trajectory import GoToTrajectory
 from dariaspy.observers import DariasObserver, EndEffectorObserver, JointObserver
-from dariaspy.movement_primitives import LearnTrajectory
+from dariaspy.movement_primitives import LearnTrajectory, ClassicSpace
 
 if __name__ == "__main__":
 
@@ -43,7 +43,11 @@ if __name__ == "__main__":
 
     # You can change to "ENDEFF_RIGHT_ARM" if you want to work in task_space
     learning_group = "RIGHT_ARM"
-    mp = LearnTrajectory(darias.groups[learning_group], recording.trajectory)
+
+    # Define the functional space of the movements
+    ms = ClassicSpace(darias.groups[learning_group],n_features=10)
+    # Learn te movement in this space
+    mp = LearnTrajectory(ms, recording.trajectory)
 
     print("Go to the initial point of the movement primitive")
     tr_init = mp.get_init_trajectory(10.)

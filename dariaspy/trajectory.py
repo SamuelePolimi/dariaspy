@@ -72,6 +72,9 @@ class NamedTrajectoryBase:
         ret = self._get_movement(*refs)
         return NamedTrajectoryBase(refs, self.duration, np.array(ret).T)
 
+    def get_dict_values(self):
+        return {ref:value for ref, value in zip(self.refs, self.values.T)}
+
     def _get_movement(self, *refs):
 
         ret = []

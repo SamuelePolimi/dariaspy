@@ -263,19 +263,19 @@ class Darias:
         :type wait: bool
         :return: if wait==False then it returns a function which, when called, will wait for the completion of the movement
         """
-        centers = mp.centers
-        scales = mp.bandwidths
+        centers = mp.movement_space.centers
+        scales = mp.movement_space.bandwidths
 
         mp_type = rc.Client.teaching_joint_space_promp
-        group = mp.group.group_name
-        if mp.group.group_name == 'ENDEFF_LEFT_ARM':
+        group = mp.movement_space.group.group_name
+        if mp.movement_space.group.group_name == 'ENDEFF_LEFT_ARM':
             mp_type = rc.Client.teaching_task_space_promp
             group = "LEFT_ARM"
-        elif mp.group.group_name == 'ENDEFF_RIGHT_ARM':
+        elif mp.movement_space.group.group_name == 'ENDEFF_RIGHT_ARM':
             mp_type = rc.Client.teaching_task_space_promp
             group = "RIGHT_ARM"
         pmp = self.client.get(mp_type, group)
-        rbf_args = np.zeros(2 * len(mp.centers))
+        rbf_args = np.zeros(2 * len(mp.movement_space.centers))
         rbf_args[0::2] = centers
         rbf_args[1::2] = scales
 
@@ -285,7 +285,7 @@ class Darias:
         fr_required = self.frequency * duration
         dz = 1. / fr_required
 
-        w = np.array([mp.params[ref] for ref in mp.group.refs])
+        w = np.array([mp.params[ref] for ref in mp.movement_space.group.refs])
 
         self.client.mode = rc.Client.mode_teaching
         pmp.setup(pmp.rbf, rbf_args, w, pmp.linear, wi_args, 0., 1., dz)
