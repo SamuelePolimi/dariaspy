@@ -78,7 +78,7 @@ class DariasModeController:
         """
         settings_request = SettingsUpdateRequest()
         settings_request.mask = settings_request.MODE
-        settings_request.settings.mode = mode.value
+        settings_request.settings.mode = mode
         try:
             self.settings_service(settings_request)
         except rospy.ServiceException as exc:

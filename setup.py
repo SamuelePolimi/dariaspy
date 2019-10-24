@@ -10,5 +10,8 @@ setup(name='dariaspy',
       packages=['dariaspy'],
       zip_safe=False,
       install_requires=[
-          'numpy>=1.15.4'
+          'numpy>=1.15.4',
+	      'rospkg>=1.1.10',
+          'enum>=0.4.7',
+          'scipy>=1.2.2'
       ])

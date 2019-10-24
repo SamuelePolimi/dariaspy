@@ -1,7 +1,7 @@
 DariasPy
 ========
 
-> **WARNING**: The new updates requires **robcom interface for python** (recompile robcom allowing in the configuration python).
+> **WARNING**: The new updates requires **robcom interface for python** (recompile robcom allowing in the configuration python). For further informations ask `samuele.tosatto@tu-darmstadt.de`.
 
 > **WARNING**: From now on it is necessary to import **activate listener** from dariaspy.ros_listener and execute it before anything else.
 
@@ -104,7 +104,9 @@ Goals
 - [x] Record extended/generalized to optitrack objects
 - [x] Hand control
 - [x] ProMPs execution
+- [ ] Integrate Dynamo Scale
 - [ ] Move to Robcom2 once it offers promps
+- [ ] Move to Python 3
 - [ ] General interface with other robots
 - [ ] Better guide, finer documentation
 - [ ] Exposition of shell commands
