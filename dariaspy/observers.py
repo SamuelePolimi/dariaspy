@@ -60,7 +60,7 @@ class ObservableRefs:
 # TODO: insert also the joint references
 observable_refs = ObservableRefs(
     *[RefInfo("%s_%s%s" % (a, r, c), "Coordinate %s of %s of the end-effector of the  %s arm." % (c_s, r_s, a_s), False)
-                for a, a_s in zip('RL',['right', 'left'])
+                for a, a_s in zip('RL', ['right', 'left'])
                 for r, r_s in zip('TR', ["traslation", "rotation"])
                 for c, c_s in zip('XYZ', 'xyz')]
 )

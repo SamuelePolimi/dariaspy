@@ -102,7 +102,7 @@ def LoadTrajectory(filename):
     :return: the named-trajectory extracted from the file
     :rtype: NamedTrajectoryBase
     """
-    obj = np.load(filename)
+    obj = np.load(filename, allow_pickle=True)
     return NamedTrajectoryBase(obj.item()['refs'], obj.item()['duration'], obj.item()['values'])
 
 

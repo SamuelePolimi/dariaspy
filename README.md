@@ -104,6 +104,7 @@ Goals
 - [x] Record extended/generalized to optitrack objects
 - [x] Hand control
 - [x] ProMPs execution
+- [ ] Renaming in `robopy` or `iaspy`, ...?
 - [ ] Integrate Dynamo Scale
 - [ ] Move to Robcom2 once it offers promps
 - [ ] Move to Python 3

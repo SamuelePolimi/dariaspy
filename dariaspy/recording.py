@@ -5,6 +5,7 @@ import time
 from trajectory import NamedTrajectory
 import warnings
 
+
 class Recorder:
     """
     This class provides an utility for recording trajectories. It fixes the robot in teaching mode and then it records
