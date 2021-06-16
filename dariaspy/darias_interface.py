@@ -9,7 +9,6 @@ In future the joints will be divided in four groups (left-arm; left-hand; right-
 
 Darias interfaces exposes also two methods, one for control and one for kinesthetic teaching.
 """
-import robcom.client as rc
 import rospy
 from geometry_msgs.msg import TransformStamped
 from sensor_msgs.msg import JointState

@@ -2,7 +2,10 @@
 This module takes care of observing a part of interest in a system
 """
 
-from optitrack import Frame
+try:
+    from optitrack import Frame
+except:
+    print("The system runs without an optitrack system.")
 
 
 class MissingRefException(Exception):
@@ -132,6 +135,22 @@ class DariasObserver(Observer):
 
     def get_possible_refs(self):
         return self.darias.arms.order
+
+
+class RobotOserver(Observer):
+    """
+    Observe the entire joint space of the robot, comprehensive of hands.
+    """
+
+    def __init__(self, robot):
+        Observer.__init__(self)
+        self.robot = robot
+
+    def __call__(self, *ref_list):
+        return {ref: self.robot.arms.info[ref] for ref in ref_list}
+
+    def get_possible_refs(self):
+        return self.robot.arms.order
 
 
 class EndEffectorObserver(Observer):
