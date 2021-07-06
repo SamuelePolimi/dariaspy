@@ -14,12 +14,27 @@ import numpy as np
 import time
 import actionlib
 import enum
+import scipy
+from scipy.interpolate import CubicSpline
 
 from dariaspy.ros_listener import RosListener
+from dariaspy.groups import Group
+from dariaspy.trajectory import NamedTrajectoryBase
+from dariaspy.movement_primitives import MovementPrimitive
+
+from franka_core_msgs.msg import JointCommand
+from franka_core_msgs.msg import RobotState, EndPointState
+from sensor_msgs.msg import JointState
+from std_msgs.msg import Float64
+
 from franka_core_msgs.msg import JointCommand
 from sensor_msgs.msg import JointState
 from franka_msgs.msg import ErrorRecoveryActionGoal
-from franka_core_msgs.msg import RobotState
+from franka_tools import FrankaFramesInterface, FrankaControllerManagerInterface, JointTrajectoryActionClient, CollisionBehaviourInterface
+
+
+
+from franka_interface import ArmInterface, RobotEnable, GripperInterface
 
 import franka_dataflow
 
@@ -121,8 +136,16 @@ class Franka:
         self._root = "/franka_ros_interface"
         # if local
         # self._root = "/panda_simulator"
-        rospy.init_node("franka_robot_gym")
+        # rospy.init_node("franka_robot_gym")
+        rospy.init_node("robopy_interface")
         self.arms = Arms(self)
+        self._arm_interface = ArmInterface(True)
+        self._gripper_interface = GripperInterface()
+        self._robot_status = RobotEnable()
+        self._ctrl_manager = FrankaControllerManagerInterface(
+            ns=self._root, sim=False)    # TODO: (sim=false for real robot))
+        print(self._ctrl_manager)
+        self._movegroup_interface = None    # TODO: consider removing it
 
         self._joint_command_publisher = rospy.Publisher(
             self._root + '/motion_controller/arm/joint_commands',
@@ -132,54 +155,166 @@ class Franka:
         while not(self.arms.ready):
             pass
 
-    def set_joint_positions(self, positions):
+        self.groups = {}
+        self._building_groups()
+
+        # TODO: temporary
+        self._joint_names = self.groups["arm"].refs
+
+    def joint_names(self):
+        return self._joint_names
+
+    def _building_groups(self):
+        self.groups["arm"] = Group("arm", ["panda_joint%d" % i for i in range(1, 8)])
+
+    def _get_cubic_spline(self, trajectory, group_name, frequency=20):
+        x = []
+        y = []
+        y_dot = []
+        ts = []
+        x_tot = 0.
+
+        dt = 1 / frequency
+
+        for goal, d in trajectory:
+            x_tot += d
+            ts.append(x_tot)
+            y.append(np.array([goal[k] for k in self.groups[group_name].refs]))
+            x.append(x_tot)
+        x = np.array(x)
+        y = np.array(y)
+        print(x, y)
+        spline = CubicSpline(x, y)
+
+        points = int(frequency * x_tot)
+
+        positions = []
+        velocities = []
+        timings = []
+        for i in range(points):
+            t = i*dt
+            positions.append(spline(t))
+            velocities.append(spline(t, 1))
+            timings.append(t)
+        return positions, velocities, timings
+
+    def go_to(self, trajectory: NamedTrajectoryBase, group_name="arm", frequency=50):
         """
-        Commands the joints of this limb to the specified positions.
+        (Blocking) Commands the limb to the provided positions.
+        Waits until the reported joint state matches that specified.
+        This function uses a low-pass filter using JointTrajectoryService
+        to smooth the movement or optionally uses MoveIt! to plan and
+        execute a trajectory.
 
-        :type positions: dict({str:float}
-        :param positions: dict of {'joint_name':joint_position,}
+        :type positions: dict({str:float})
+        :param positions: joint_name:angle command
+        :type timeout: float
+        :param timeout: seconds to wait for move to finish [15]
+        :type threshold: float
+        :param threshold: position threshold in radians across each joint when
+         move is considered successful [0.00085]
+        :param test: optional function returning True if motion must be aborted
+        :type use_moveit: bool
+        :param use_moveit: if set to True, and movegroup interface is available,
+         move to the joint positions using moveit planner.
         """
-        command_msg = JointCommand()
-        joint_names = ['panda_joint1', 'panda_joint2', 'panda_joint3', 'panda_joint4', 'panda_joint5', 'panda_joint6',
-                       'panda_joint7']
-        command_msg.names = joint_names
-        command_msg.position = [positions[j] for j in joint_names]
-        command_msg.mode = JointCommand.POSITION_MODE
-        command_msg.header.stamp = rospy.Time.now()
-        self._joint_command_publisher.publish(command_msg)
 
-    def set_joint_velocities(self, velocities):
-        """
-        Commands the joints of this limb to the specified velocities.
+        curr_controller = self._ctrl_manager.set_motion_controller(
+            self._ctrl_manager.joint_trajectory_controller)
 
-        :type velocities: dict({str:float})
-        :param velocities: dict of {'joint_name':joint_velocity,}
-        """
-        # self._toggle_enabled(True)
-        command_msg = JointCommand()
-        joint_names = ['panda_joint1', 'panda_joint2', 'panda_joint3', 'panda_joint4', 'panda_joint5', 'panda_joint6',
-                       'panda_joint7']
-        command_msg.names = joint_names
-        command_msg.velocity = [velocities[j] for j in joint_names]
-        command_msg.mode = JointCommand.VELOCITY_MODE
-        command_msg.header.stamp = rospy.Time.now()
-        print(command_msg)
-        self._joint_command_publisher.publish(command_msg)
+        traj_client = JointTrajectoryActionClient(
+            joint_names=self.joint_names())
+        traj_client.clear()
 
-    def _toggle_enabled(self, status):
+        if len(trajectory.duration) > 1:
+            self._get_cubic_spline(trajectory, "arm")
 
-        pub = rospy.Publisher('{}/franka_control/error_recovery/goal'.format(self._root), ErrorRecoveryActionGoal,
-                              queue_size=10)
+            for i, (position, velocity, d) \
+                    in enumerate(zip(*self._get_cubic_spline(trajectory, "arm", frequency=frequency))):
 
-        if self._enabled == status:
-            print("already")
-            #rospy.loginfo("Robot is already %s" % self.state())
+                traj_client.add_point(
+                    positions=position.tolist(), time=float(d),
+                    velocities=velocity.tolist())
+        else:
+            for goal, d in trajectory:
+                position = [goal[k] for k in self.groups[group_name].refs]
+                velocity = [0.]*len(position)
+                traj_client.add_point(
+                    positions=position, time=float(d),
+                    velocities=velocity)
+
+        print("command sent")
+        traj_client.start()  # send the trajectory action request
+        # traj_client.wait(timeout = timeout)
 
         franka_dataflow.wait_for(
-            test=lambda: self._enabled == status,
-            timeout=5.0,
-            timeout_msg=("Failed to %sable robot" %
-                         ('en' if status else 'dis',)),
-            body=lambda: pub.publish(ErrorRecoveryActionGoal()),
+            test=lambda: traj_client.result(),
+            timeout=60,
+            timeout_msg="Something did not work",
+            rate=100,
+            raise_on_error=False
         )
-        rospy.loginfo("Robot %s", ('Enabled' if status else 'Disabled'))
+        res = traj_client.result()
+        if res is not None and res.error_code:
+            rospy.loginfo("Trajectory Server Message: {}".format(res))
+
+        rospy.sleep(0.5)
+
+        self._ctrl_manager.set_motion_controller(curr_controller)
+
+        rospy.loginfo("{}: Trajectory controlling complete".format(
+            self.__class__.__name__))
+        rospy.sleep(0.5)
+
+    def goto_mp(self, movement_primitive: MovementPrimitive, frequency=50, duration=10., group_name="arm"):
+
+        curr_controller = self._ctrl_manager.set_motion_controller(
+            self._ctrl_manager.joint_trajectory_controller)
+
+        traj_client = JointTrajectoryActionClient(
+            joint_names=self.joint_names())
+        traj_client.clear()
+
+        pos_traj = movement_primitive.get_full_trajectory(frequency=frequency, duration=duration)
+        vel_traj = movement_primitive.get_full_trajectory_derivative(frequency=frequency, duration=duration)
+
+        timing = []
+        positions = []
+        velocities = []
+
+        d_tot = 0
+        for goal, d in pos_traj:
+            d_tot += float(d)
+            timing.append(d_tot)
+            positions.append([goal[k] for k in self.groups[group_name].refs])
+
+        for goal, d in vel_traj:
+            velocities.append([goal[k]/duration for k in self.groups[group_name].refs])
+
+        for t, position, velocity in zip(timing, positions, velocities):
+
+            traj_client.add_point(
+                    positions=position, time=t,
+                    velocities=velocity)
+
+        traj_client.start()  # send the trajectory action request
+        # traj_client.wait(timeout = timeout)
+
+        franka_dataflow.wait_for(
+            test=lambda: traj_client.result(),
+            timeout=60,
+            timeout_msg="Something did not work",
+            rate=100,
+            raise_on_error=False
+        )
+        res = traj_client.result()
+        if res is not None and res.error_code:
+            rospy.loginfo("Trajectory Server Message: {}".format(res))
+
+        rospy.sleep(0.5)
+
+        self._ctrl_manager.set_motion_controller(curr_controller)
+
+        rospy.loginfo("{}: Trajectory controlling complete".format(
+            self.__class__.__name__))
+        rospy.sleep(0.5)

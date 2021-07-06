@@ -2,7 +2,7 @@ import numpy as np
 import time
 
 
-from trajectory import NamedTrajectory
+from dariaspy.trajectory import NamedTrajectory
 import warnings
 
 
