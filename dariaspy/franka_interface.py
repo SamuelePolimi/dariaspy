@@ -18,7 +18,7 @@ import scipy
 from scipy.interpolate import CubicSpline
 
 from dariaspy.ros_listener import RosListener
-from dariaspy.groups import Group
+from dariaspy.groups import Group, group_union
 from dariaspy.trajectory import NamedTrajectoryBase
 from dariaspy.movement_primitives import MovementPrimitive
 
@@ -31,8 +31,6 @@ from franka_core_msgs.msg import JointCommand
 from sensor_msgs.msg import JointState
 from franka_msgs.msg import ErrorRecoveryActionGoal
 from franka_tools import FrankaFramesInterface, FrankaControllerManagerInterface, JointTrajectoryActionClient, CollisionBehaviourInterface
-
-
 
 from franka_interface import ArmInterface, RobotEnable, GripperInterface
 
@@ -107,8 +105,11 @@ class Arms(RosListener):
 
     def __init__(self, robot):
         RosListener.__init__(self)
-        rospy.Subscriber(robot._root + '/custom_franka_state_controller/joint_states', JointState,
+        # TODO: this will not work with gazebo.
+        rospy.Subscriber('/joint_states', JointState,
                          self.get_callback())
+        # rospy.Subscriber(robot._root + '/custom_franka_state_controller/joint_states', JointState,
+        #                  self.get_callback())
         self.right = Joint(None, None)
         self.left = Joint(None, None)
         self.order = None
@@ -121,8 +122,7 @@ class Arms(RosListener):
             self.info[ref] = data.position[i]
 
         if self.order is None:
-            # todo check this one
-            self.order = data.name[15:22] + data.name[:15] + data.name[37:44] + data.name[22:37]
+            self.order = data.name
 
 
 class Franka:
@@ -149,8 +149,10 @@ class Franka:
 
         self._joint_command_publisher = rospy.Publisher(
             self._root + '/motion_controller/arm/joint_commands',
+            # 'joint_commands',
             JointCommand,
-            tcp_nodelay=True)
+            tcp_nodelay=True,
+            queue_size=1)
 
         while not(self.arms.ready):
             pass
@@ -159,18 +161,19 @@ class Franka:
         self._building_groups()
 
         # TODO: temporary
-        self._joint_names = self.groups["arm"].refs
+        self._joint_names = self.groups["arm_gripper"].refs
 
     def joint_names(self):
         return self._joint_names
 
     def _building_groups(self):
         self.groups["arm"] = Group("arm", ["panda_joint%d" % i for i in range(1, 8)])
+        self.groups["gripper"] = Group("arm", ["panda_finger_joint%d" % i for i in [1, 2]])
+        self.groups["arm_gripper"] = group_union("arm_gripper", self.groups["arm"], self.groups["gripper"])
 
     def _get_cubic_spline(self, trajectory, group_name, frequency=20):
         x = []
         y = []
-        y_dot = []
         ts = []
         x_tot = 0.
 
@@ -198,7 +201,7 @@ class Franka:
             timings.append(t)
         return positions, velocities, timings
 
-    def go_to(self, trajectory: NamedTrajectoryBase, group_name="arm", frequency=50):
+    def go_to(self, trajectory: NamedTrajectoryBase, group_name="arm_gripper", frequency=50):
         """
         (Blocking) Commands the limb to the provided positions.
         Waits until the reported joint state matches that specified.
@@ -222,34 +225,39 @@ class Franka:
         curr_controller = self._ctrl_manager.set_motion_controller(
             self._ctrl_manager.joint_trajectory_controller)
 
+        # traj_client = JointTrajectoryActionClient(
+        #     joint_names=self.joint_names())
         traj_client = JointTrajectoryActionClient(
-            joint_names=self.joint_names())
+            joint_names=self.groups[group_name].refs
+        )
         traj_client.clear()
 
         if len(trajectory.duration) > 1:
-            self._get_cubic_spline(trajectory, "arm")
+            self._get_cubic_spline(trajectory, group_name)
 
             for i, (position, velocity, d) \
-                    in enumerate(zip(*self._get_cubic_spline(trajectory, "arm", frequency=frequency))):
+                    in enumerate(zip(*self._get_cubic_spline(trajectory, group_name, frequency=frequency))):
 
                 traj_client.add_point(
                     positions=position.tolist(), time=float(d),
                     velocities=velocity.tolist())
         else:
             for goal, d in trajectory:
-                position = [goal[k] for k in self.groups[group_name].refs]
+                position = [float(goal[k]) for k in self.groups[group_name].refs]
                 velocity = [0.]*len(position)
+                print("position", position)
+                print("velocity", velocity)
+                print("d", float(d))
                 traj_client.add_point(
                     positions=position, time=float(d),
                     velocities=velocity)
 
-        print("command sent")
         traj_client.start()  # send the trajectory action request
         # traj_client.wait(timeout = timeout)
 
         franka_dataflow.wait_for(
             test=lambda: traj_client.result(),
-            timeout=60,
+            timeout=260,
             timeout_msg="Something did not work",
             rate=100,
             raise_on_error=False
@@ -266,13 +274,13 @@ class Franka:
             self.__class__.__name__))
         rospy.sleep(0.5)
 
-    def goto_mp(self, movement_primitive: MovementPrimitive, frequency=50, duration=10., group_name="arm"):
+    def goto_mp(self, movement_primitive: MovementPrimitive, frequency=50, duration=10., group_name="arm_gripper"):
 
         curr_controller = self._ctrl_manager.set_motion_controller(
             self._ctrl_manager.joint_trajectory_controller)
 
         traj_client = JointTrajectoryActionClient(
-            joint_names=self.joint_names())
+            joint_names=self.groups[group_name].refs)
         traj_client.clear()
 
         pos_traj = movement_primitive.get_full_trajectory(frequency=frequency, duration=duration)
@@ -297,6 +305,7 @@ class Franka:
                     positions=position, time=t,
                     velocities=velocity)
 
+        print("COMMAND SENT")
         traj_client.start()  # send the trajectory action request
         # traj_client.wait(timeout = timeout)
 

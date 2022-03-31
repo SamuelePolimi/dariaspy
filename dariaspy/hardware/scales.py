@@ -1,3 +1,15 @@
+"""
+How to make it work: install pyusb (noite if you are on venv, do python -m pip install pyusb).
+Then allow reading the port using udev rules
+
+SUBSYSTEM=="usb", MODE="0660", GROUP="plugdev"
+
+After adding the rule,
+
+sudo sdevadm control --reload
+sudo udevadm trigger
+"""
+
 import usb.core
 import usb.util
 

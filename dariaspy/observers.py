@@ -137,7 +137,7 @@ class DariasObserver(Observer):
         return self.darias.arms.order
 
 
-class RobotOserver(Observer):
+class RobotObserver(Observer):
     """
     Observe the entire joint space of the robot, comprehensive of hands.
     """

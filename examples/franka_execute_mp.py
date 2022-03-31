@@ -9,42 +9,46 @@ gravity compensation)
 
 Everything will happen in the cartesian space.
 """
-import matplotlib.pyplot as plt
 
 
 from dariaspy.franka_interface import Franka
-from dariaspy.positions import Home_Position
-from dariaspy.recording import Recorder
-from dariaspy.trajectory import GoToTrajectory, LoadTrajectory
-from dariaspy.observers import DariasObserver, EndEffectorObserver, JointObserver
+from dariaspy.trajectory import LoadTrajectory
 from dariaspy.movement_primitives import LearnTrajectory, ClassicSpace
 
 if __name__ == "__main__":
 
     franka = Franka()
 
-    trajectory = LoadTrajectory("franka_trajectory.npy")
+    trajectory_1 = LoadTrajectory("franka_trajectory_1.npy")
+    trajectory_2 = LoadTrajectory("franka_trajectory_2.npy")
 
     learning_group = "arm"
-    ms = ClassicSpace(franka.groups[learning_group], n_features=10)
+
+    franka._gripper_interface.open()
+    ms = ClassicSpace(franka.groups[learning_group], n_features=30)
 
     # Learn te movement in this space
-    mp = LearnTrajectory(ms, trajectory)
-
+    mp1 = LearnTrajectory(ms, trajectory_1)
     print("Go to the initial point of the movement primitive")
-    tr_init = mp.get_init_trajectory(10.)
+    tr_init = mp1.get_init_trajectory(10.)
 
     # Go to the correct position
-    # franka.go_to(tr_init, learning_group)
+    franka.go_to(tr_init, learning_group)
 
     print("Play the movement primitive")
     # Go to with movement primitive
 
-    # tr_vel = mp.get_full_trajectory_derivative()
-    # tr_pos = mp.get_full_trajectory()
-    # plt.plot(tr_vel.values[:, 2], label="velocoty")
-    # plt.plot(tr_pos.values[:, 2], label="position")
-    # plt.legend(loc="best")
-    # plt.savefig("velocities.png")
+    franka.goto_mp(mp1, frequency=5, group_name=learning_group)
+    franka._gripper_interface.close()
 
-    franka.goto_mp(mp, frequency=5)
+    mp2 = LearnTrajectory(ms, trajectory_2)
+    print("Go to the initial point of the movement primitive")
+    tr_init = mp2.get_init_trajectory(1.)
+
+    franka.go_to(tr_init, learning_group)
+
+    franka.goto_mp(mp2, frequency=5, group_name=learning_group)
+    franka._gripper_interface.open()
+
+    franka._gripper_interface.stop_action()
+
